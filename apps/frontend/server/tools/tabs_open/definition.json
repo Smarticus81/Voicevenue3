@@ -1,0 +1,14 @@
+{
+  "name": "tabs.open",
+  "description": "Open a new tab for a guest at this venue.",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "guest_name": { "type": "string" }
+    },
+    "required": ["guest_name"]
+  },
+  "handlerPath": "./handler.ts"
+}
+
+

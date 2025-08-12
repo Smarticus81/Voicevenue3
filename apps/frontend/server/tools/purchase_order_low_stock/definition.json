@@ -1,0 +1,8 @@
+{
+  "name": "purchase.order_low_stock",
+  "description": "List ingredients at/below reorder level for this venue.",
+  "parameters": { "type": "object", "properties": {}, "additionalProperties": false },
+  "handlerPath": "./handler.ts"
+}
+
+

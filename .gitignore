@@ -1,0 +1,30 @@
+# Node
+node_modules/
+.next/
+dist/
+build/
+coverage/
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+
+# OS/Editor
+.DS_Store
+*.log
+.idea/
+.vscode/*.log
+
+# Env
+.env
+apps/**/.env
+apps/**/.env.local
+.env.local
+
+# Generated
+packages/shared/dist/
+

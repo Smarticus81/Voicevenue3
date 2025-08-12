@@ -1,0 +1,21 @@
+{
+  "name": "create_event",
+  "description": "Create and allocate a new event",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "venueId": { "type": "string" },
+      "eventTypeId": { "type": "string" },
+      "packageId": { "type": "string" },
+      "name": { "type": "string" },
+      "startsAt": { "type": "string" },
+      "endsAt": { "type": "string" },
+      "expectedGuests": { "type": "number" },
+      "notes": { "type": "string" }
+    },
+    "required": ["venueId","eventTypeId","packageId","name","startsAt","endsAt","expectedGuests"]
+  },
+  "handlerPath": "handler.ts"
+}
+
+

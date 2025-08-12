@@ -1,0 +1,19 @@
+{
+  "id": "demo",
+  "name": "Bev",
+  "voice": { 
+    "lane": "openai", 
+    "openai_model": "gpt-4o-realtime-preview-2024-12-17", 
+    "elevenlabs_voice": "Rachel" 
+  },
+  "nlu": { 
+    "mode": "intents", 
+    "intentsPath": "data/intents.yaml" 
+  },
+  "personaPath": "config/personas/bev.md",
+  "tools": [
+    "cart_add",
+    "create_event",
+    "link_venues"
+  ]
+}

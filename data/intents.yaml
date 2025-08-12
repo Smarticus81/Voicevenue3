@@ -1,0 +1,120 @@
+﻿intents:
+  - name: order.add
+    slots:
+      - name: qty
+        type: number
+      - name: unit
+        type: enum
+        values: [item, items, drink, drinks, shot, shots, ounce, ounces, oz]
+      - name: drink
+        type: free
+      - name: table
+        type: free
+      - name: tab
+        type: free
+    examples:
+      - "add {qty:number} {unit:shots} of {drink} to table {table}"
+      - "add {qty:number} {unit:shots} of {drink} to tab {tab}"
+      - "add {qty:number} {unit:oz} of {drink} to table {table}"
+      - "add {qty:number} {unit:oz} of {drink} to tab {tab}"
+      - "add {qty:number} {unit:ounces} of {drink} to table {table}"
+      - "add {qty:number} {unit:ounces} of {drink} to tab {tab}"
+      - "add {qty:number} {unit:shots} {drink} to table {table}"
+      - "add {qty:number} {unit:shots} {drink} to tab {tab}"
+      - "add {qty:number} {unit:drinks} of {drink} to table {table}"
+      - "add {qty:number} {unit:drinks} of {drink} to tab {tab}"
+      - "add {qty:number} {drink} to table {table}"
+      - "add {qty:number} {drink} to tab {tab}"
+      - "add {drink} to table {table}"
+      - "add {drink} to tab {tab}"
+      - "ring up {qty:number} {unit:shots} of {drink} on table {table}"
+      - "ring up {qty:number} {unit:oz} of {drink} on table {table}"
+      - "ring up {qty:number} {drink} on table {table}"
+      - "ring up {drink} on table {table}"
+      - "put {qty:number} {unit:shots} {drink} on tab {tab}"
+      - "put {qty:number} {unit:oz} {drink} on tab {tab}"
+      - "put {qty:number} {drink} on tab {tab}"
+      - "two shots of {drink} to table {table}"
+      - "three ounces of {drink} to tab {tab}"
+      - "one {drink} to table {table}"
+      - "add {qty:number} {unit:shot} of {drink}"
+      - "add {qty:number} {unit:ounce} of {drink}"
+      - "add {qty:number} {unit:drink} of {drink}"
+      - "add {drink}"
+      - "{qty:number} {unit:shots} {drink}"
+      - "{qty:number} {unit:oz} {drink}"
+      - "{qty:number} {drink}"
+
+  # Existing intents (retained for backward-compatibility)
+  - name: order_drink
+    tool: cart_add
+    patterns:
+      - '^add\s+(\d+)\s+(.+)$'
+      - '^add\s+(.+)$'
+    slots:
+      quantity: '1'
+      drink_name: '2'
+  - name: view_cart
+    tool: cart_view
+    patterns:
+      - '^view cart$'
+      - '^show cart$'
+      - '^cart$'
+    slots: {}
+  - name: complete_order
+    tool: cart_create_order
+    patterns:
+      - '^process order$'
+      - '^complete order$'
+      - '^checkout$'
+    slots: {}
+
+  - name: create_event
+    tool: create_event
+    patterns:
+      - '^add a (.+) at (.+) on (.+) at (.+), (.+), for (\\d+) guests$'
+      - '^schedule (.+) at (.+) on (.+) using (.+) for (\\d+)$'
+      - '^book a (.+) for (\\d+) people at (.+) (.+) (.+)$'
+    slots: {}
+
+  - name: link_venues
+    tool: link_venues
+    patterns:
+      - '^link (.+) and (.+) inventory$'
+      - '^share inventory between (.+) and (.+)$'
+    slots: {}
+
+lexicon:
+  unit:
+    - item
+    - items
+    - drink
+    - drinks
+    - shot
+    - shots
+    - ounce
+    - ounces
+    - oz
+intents:
+  - name: order_drink
+    tool: cart_add
+    patterns:
+      - '^add\s+(\d+)\s+(.+)$'
+      - '^add\s+(.+)$'
+    slots:
+      quantity: '1'
+      drink_name: '2'
+  - name: view_cart
+    tool: cart_view
+    patterns:
+      - '^view cart$'
+      - '^show cart$'
+      - '^cart$'
+    slots: {}
+  - name: complete_order
+    tool: cart_create_order
+    patterns:
+      - '^process order$'
+      - '^complete order$'
+      - '^checkout$'
+    slots: {}

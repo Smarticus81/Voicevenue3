@@ -1,0 +1,16 @@
+{
+  "name": "cart_add",
+  "description": "Add a drink to the cart",
+  "parameters": {
+    "type": "object",
+    "properties": {
+      "clientId": { "type": "string", "default": "demo" },
+      "drink_name": { "type": "string" },
+      "quantity": { "type": "number", "default": 1 }
+    },
+    "required": ["clientId", "drink_name"]
+  },
+  "handlerPath": "./handler.ts"
+}
+
+
