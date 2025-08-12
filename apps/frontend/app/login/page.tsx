@@ -94,7 +94,7 @@ export default function LoginPage() {
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-300 focus:border-transparent outline-none shadow-sm text-gray-800 placeholder-gray-400"
-                  placeholder="you@yourrestaurant.com"
+                  placeholder="you@yourBar.com"
                   required
                 />
               </div>

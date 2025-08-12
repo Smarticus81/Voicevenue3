@@ -67,8 +67,8 @@ export default function SettingsPage() {
               <Settings size={24} className="text-white" />
             </div>
             <div>
-              <h1 className="text-3xl font-bold text-gray-800">Restaurant Configuration</h1>
-              <p className="text-gray-500">Set up your restaurant's branding and voice agent settings</p>
+              <h1 className="text-3xl font-bold text-gray-800">Bar Configuration</h1>
+              <p className="text-gray-500">Set up your Bar's branding and voice agent settings</p>
             </div>
           </div>
 
@@ -77,20 +77,20 @@ export default function SettingsPage() {
             <h3 className="text-lg font-semibold text-blue-800 mb-3">What is this page?</h3>
             <div className="space-y-2 text-sm text-blue-700">
               <p><strong>This is where you customize your voice-powered POS system.</strong></p>
-              <p>• Set your restaurant name that appears on all screens</p>
+              <p>• Set your Bar name that appears on all screens</p>
               <p>• Configure how your voice agent sounds and responds</p>
               <p>• Adjust voice recognition sensitivity for your environment</p>
               <p>• Changes here affect your kiosk, POS terminals, and staff interfaces</p>
             </div>
           </div>
 
-          {/* Restaurant Branding Section */}
+          {/* Bar Branding Section */}
           <div className="mb-8">
-            <h2 className="text-xl font-semibold text-gray-800 mb-4">Restaurant Branding</h2>
+            <h2 className="text-xl font-semibold text-gray-800 mb-4">Bar Branding</h2>
             
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Restaurant Name
+                Bar Name
               </label>
               <div className="flex items-center space-x-3">
                 <Building2 size={20} className="text-gray-500" />
@@ -188,7 +188,7 @@ export default function SettingsPage() {
             <h3 className="text-lg font-semibold text-amber-800 mb-3">Need Advanced Settings?</h3>
             <div className="space-y-2 text-sm text-amber-700">
               <p>For voice recognition tuning, custom wake words, or multi-location setup, contact our support team.</p>
-              <p>Most restaurants work perfectly with the default voice settings shown above.</p>
+              <p>Most Bars work perfectly with the default voice settings shown above.</p>
             </div>
           </div>
         </div>

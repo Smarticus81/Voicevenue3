@@ -1,6 +1,6 @@
 # VenueVoice
 
-Premium voice-enabled POS & inventory management platform for restaurants and bars.
+Premium voice-enabled POS & inventory management platform for Bars and bars.
 
 ## Features
 

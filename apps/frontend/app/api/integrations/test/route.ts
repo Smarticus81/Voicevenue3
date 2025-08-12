@@ -19,7 +19,7 @@ function validate(vendor: string, c: any) {
     case "square":
       return !!c.accessToken && c.accessToken.length > 20 && !!c.locationId;
     case "toast":
-      return !!c.apiKey && c.apiKey.length > 20 && !!c.restaurantGuid;
+      return !!c.apiKey && c.apiKey.length > 20 && !!c.BarGuid;
     case "lavu":
       return !!c.clientId && !!c.clientSecret && !!c.locationId;
     case "clover":
@@ -35,7 +35,7 @@ function validate(vendor: string, c: any) {
     case "micros":
       return !!c.serverUrl && /^https?:\/\//.test(c.serverUrl) && !!c.siteId && !!c.username && !!c.password;
     case "posist":
-      return !!c.apiKey && !!c.restaurantId;
+      return !!c.apiKey && !!c.BarId;
     default:
       return false;
   }

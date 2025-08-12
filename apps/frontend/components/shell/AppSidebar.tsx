@@ -53,7 +53,7 @@ export default function AppSidebar() {
     const sessionCookie = cookies.find(c => c.trim().startsWith('session_user='));
     if (sessionCookie) {
       // In a real app, you'd fetch user details from an API
-      setUserEmail('user@restaurant.com'); // Placeholder
+      setUserEmail('user@Bar.com'); // Placeholder
     }
   }, []);
   

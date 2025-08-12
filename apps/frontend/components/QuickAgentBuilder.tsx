@@ -22,8 +22,8 @@ const QUICK_PRESETS = {
     tools: ["cart_add", "cart_view", "cart_create_order", "search_drinks", "list_drinks", "inventory_check"],
     wake: { phrase: "hey assistant", fuzz: 2 }
   },
-  restaurant: {
-    personality: "Friendly restaurant order assistant",
+  Bar: {
+    personality: "Friendly Bar order assistant",
     voice: "sage",
     lane: "openai", 
     tools: ["cart_add", "cart_view", "cart_create_order", "search_drinks", "list_drinks", "table_management"],
@@ -34,7 +34,7 @@ const QUICK_PRESETS = {
 const POS_TEMPLATES = [
   { id: "drinks", name: "Bar/Drinks", description: "Perfect for bars, pubs, and beverage service" },
   { id: "retail", name: "Retail Store", description: "General retail with inventory management" },
-  { id: "restaurant", name: "Restaurant", description: "Full service restaurant with orders" },
+  { id: "Bar", name: "Bar", description: "Full service Bar with orders" },
   { id: "custom", name: "Custom Setup", description: "Start with basic POS and customize" }
 ];
 

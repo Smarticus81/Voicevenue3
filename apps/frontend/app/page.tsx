@@ -29,12 +29,12 @@ export default function HomePage() {
             Voice-First
             <br />
             <span className="bg-gradient-to-r from-emerald-400 via-blue-400 to-purple-400 bg-clip-text text-transparent">
-              Restaurant AI
+              Bar AI
             </span>
           </h1>
           
           <p className="text-xl md:text-2xl text-white/60 mb-4 font-light max-w-2xl mx-auto leading-relaxed">
-            Transform your restaurant with AI voice commands
+            Transform your Bar with AI voice commands
           </p>
           
           <p className="text-white/40 text-sm font-light">

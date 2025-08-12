@@ -7,7 +7,7 @@ type AgentState = "idle" | "wake-listening" | "command-mode" | "error";
 type SpeechRecognition = any;
 
 export default function OpenAIWakeWordAgent({
-  instructions = `You are Bev, an expert bartender and voice assistant working at a live bar/restaurant. This is NOT a simulation - you are handling real voice orders and inventory management.
+  instructions = `You are Bev, an expert bartender and voice assistant working at a live bar/Bar. This is NOT a simulation - you are handling real voice orders and inventory management.
 
 Your role:
 - You work behind the bar taking voice orders from staff and customers

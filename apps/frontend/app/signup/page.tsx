@@ -64,7 +64,7 @@ export default function FastSignupPage() {
             <img src="/bevpro-logo.svg" alt="BevPro" className="h-10" />
           </div>
           <h1 className="text-3xl font-bold mb-2 text-gray-900">Create Your Workspace</h1>
-          <p className="text-gray-600">Start building voice-powered restaurant operations</p>
+          <p className="text-gray-600">Start building voice-powered Bar operations</p>
         </div>
         <form onSubmit={submit} className="space-y-6">
           {/* Personal Information Section */}
@@ -95,7 +95,7 @@ export default function FastSignupPage() {
                     className="w-full pl-11 pr-4 py-3 border border-gray-300 rounded-lg text-gray-900 placeholder-gray-400 shadow-sm focus:shadow-md focus:ring-2 focus:ring-emerald-300 focus:border-transparent outline-none transition-all duration-200" 
                     value={form.email} 
                     onChange={(e) => setForm({ ...form, email: e.target.value })} 
-                    placeholder="john@restaurant.com"
+                    placeholder="john@Bar.com"
                     required 
                   />
                 </div>
@@ -123,7 +123,7 @@ export default function FastSignupPage() {
             <h3 className="text-lg font-semibold text-gray-800 border-b border-gray-200 pb-2">Business Information</h3>
             
             <div>
-              <label className="block text-sm font-medium text-gray-800 mb-2">Restaurant / Bar Name</label>
+              <label className="block text-sm font-medium text-gray-800 mb-2">Bar / Bar Name</label>
               <div className="relative">
                 <Building2 size={18} className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" />
                 <input 

@@ -376,7 +376,7 @@ export default function Navigation() {
                       <Settings size={20} />
                       <div>
                         <div className="font-medium">Settings</div>
-                        <div className="text-xs text-white/50">Restaurant config</div>
+                        <div className="text-xs text-white/50">Bar config</div>
                       </div>
                     </Link>
                     <button

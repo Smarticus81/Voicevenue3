@@ -26,7 +26,7 @@ const TEMPLATE_DATA = {
       { name: "Keychain", price: 500, category: "Accessories", stock: 100 }
     ]
   },
-  restaurant: {
+  Bar: {
     items: [
       { name: "Burger", price: 1200, category: "Mains", stock: 50 },
       { name: "Pizza", price: 1500, category: "Mains", stock: 30 },

@@ -7,7 +7,7 @@ import Navigation from '@/components/Navigation';
 export const metadata: Metadata = {
   title: 'VenueVoice',
   description: 'Premium voice-enabled POS & inventory management platform',
-  keywords: ['POS', 'inventory', 'voice', 'AI', 'restaurant', 'bar', 'management'],
+  keywords: ['POS', 'inventory', 'voice', 'AI', 'Bar', 'bar', 'management'],
   authors: [{ name: 'VenueVoice' }],
   robots: 'index, follow',
 };

@@ -152,7 +152,7 @@ export default function VoiceKiosk() {
             setInstructions(data.instructions);
           } else {
             console.log(`[Kiosk] No custom instructions found, using default`);
-            setInstructions(`You are Bev, an expert bartender and voice assistant working at a live bar/restaurant. This is NOT a simulation - you are handling real voice orders and inventory management.
+            setInstructions(`You are Bev, an expert bartender and voice assistant working at a live bar/Bar. This is NOT a simulation - you are handling real voice orders and inventory management.
 
 Your role:
 - You work behind the bar taking voice orders from staff and customers
@@ -187,7 +187,7 @@ REAL-TIME INTERACTION: You are a real-time voice assistant. Process all function
         })
         .catch((err) => {
           console.error(`[Kiosk] Failed to load instructions:`, err);
-          setInstructions(`You are Bev, an expert bartender and voice assistant working at a live bar/restaurant. This is NOT a simulation - you are handling real voice orders and inventory management.
+          setInstructions(`You are Bev, an expert bartender and voice assistant working at a live bar/Bar. This is NOT a simulation - you are handling real voice orders and inventory management.
 
 Your role:
 - You work behind the bar taking voice orders from staff and customers
@@ -388,7 +388,7 @@ REAL-TIME INTERACTION: You are a real-time voice assistant. Process all function
           type: "session.update",
           session: {
             modalities: ["text", "audio"],
-            instructions: instructions || `You are Bev, an expert bartender and voice assistant working at a live bar/restaurant. This is NOT a simulation - you are handling real voice orders and inventory management.
+            instructions: instructions || `You are Bev, an expert bartender and voice assistant working at a live bar/Bar. This is NOT a simulation - you are handling real voice orders and inventory management.
 
 Your role:
 - You work behind the bar taking voice orders from staff and customers
