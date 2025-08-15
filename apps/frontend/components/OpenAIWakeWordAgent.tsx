@@ -467,6 +467,15 @@ CRITICAL: When activated by wake word, immediately respond with "Yes, I'm listen
 
   return (
     <div className="flex flex-col items-center justify-center space-y-8 max-w-sm mx-auto text-center">
+      {/* BevPro Logo */}
+      <div className="mb-4">
+        <img 
+          src="/bevpro-logo.svg" 
+          alt="BevPro" 
+          className="h-6 w-auto opacity-60"
+        />
+      </div>
+      
       {/* Central Voice Indicator */}
       <div className="relative">
         <div className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-500 ${

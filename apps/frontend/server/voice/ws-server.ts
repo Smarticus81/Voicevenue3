@@ -302,7 +302,7 @@ wss.on("connection", (ws: WebSocket, req) => {
     openaiWs.onopen = () => {
       console.log("[OpenAI] Connected to Realtime API");
       
-      // Configure session with wake word detection
+      // Configure session with wake word detection and automatic tool execution
       openaiWs?.send(JSON.stringify({
         type: "session.update",
         session: {
@@ -326,13 +326,15 @@ TERMINATION PROTOCOL:
 - On "stop listening", "end call", "bye bev", "thanks bev": return to wake word mode
 - On "shut down", "shutdown", "turn off": complete shutdown
 
-TOOL CALLING:
-- Use cart_add when user orders items
-- Use search_drinks for menu questions
-- Always confirm actions taken in past tense`,
+CRITICAL TOOL EXECUTION:
+- Process complete orders in one fluid conversation turn
+- Use multiple tools sequentially without waiting for user permission between tools
+- When handling orders: 1) Add all items to cart 2) View cart 3) Create order 4) Confirm
+- Execute all necessary tools automatically as part of processing the complete request
+- Never pause between tool calls asking for permission`,
           voice: "shimmer",
-          temperature: 0.4,
-          max_tokens: 1500,
+          temperature: 0.2,             // Lower temperature for faster, more predictable responses
+          max_tokens: 800,              // Shorter responses for lower latency
           input_audio_format: "pcm16",
           output_audio_format: "pcm16",
           input_audio_transcription: {
@@ -340,15 +342,17 @@ TOOL CALLING:
           },
           turn_detection: {
             type: "server_vad",
-            threshold: 0.2,
-            prefix_padding_ms: 150,
-            silence_duration_ms: 600
+            threshold: 0.15,              // Ultra-sensitive for instant detection
+            prefix_padding_ms: 100,       // Minimal padding for fastest response
+            silence_duration_ms: 300      // Very short silence detection
           },
+          tool_choice: "auto",
+          parallel_tool_calls: true,
           tools: [
             {
               type: "function",
               name: "cart_add",
-              description: "Add a drink to the cart",
+              description: "Add a drink to the cart. Use this for each item the user wants to order.",
               parameters: {
                 type: "object",
                 properties: {
@@ -361,7 +365,7 @@ TOOL CALLING:
             {
               type: "function",
               name: "search_drinks",
-              description: "Search for drinks by name or category",
+              description: "Search for drinks by name or category. Use when user asks about menu items.",
               parameters: {
                 type: "object",
                 properties: {
@@ -373,7 +377,16 @@ TOOL CALLING:
             {
               type: "function",
               name: "cart_view",
-              description: "View current cart contents",
+              description: "View current cart contents. Use this to check cart before finalizing order.",
+              parameters: {
+                type: "object",
+                properties: {}
+              }
+            },
+            {
+              type: "function",
+              name: "cart_create_order",
+              description: "Create an order from the cart. Use this to finalize the order after adding items.",
               parameters: {
                 type: "object",
                 properties: {}

@@ -43,8 +43,10 @@ export async function POST(req: Request) {
       return new Response(JSON.stringify({ ok: false, error: 'Invalid agent configuration' }), { status: 400 });
     }
 
-    // Create deployment record
+    // Create deployment record with different URLs based on agent type
     const deploymentKey = `deployment:${agentId}:${Date.now()}`;
+    const isRAGAgent = agentConfig.preset === 'rag' || agentConfig.posTemplate === 'rag';
+    
     const deployment = {
       agentId,
       venueId,
@@ -52,7 +54,11 @@ export async function POST(req: Request) {
       status: 'active',
       deployedAt: new Date().toISOString(),
       config: agentConfig,
-      urls: {
+      urls: isRAGAgent ? {
+        standalone: `/rag-agent?venueId=${venueId}&agentId=${agentId}&lane=${agentConfig.lane || 'openai'}`,
+        embed: `/embed/rag?venueId=${venueId}&agentId=${agentId}`,
+        api: `/api/rag/search-documents`
+      } : {
         kiosk: `/kiosk?venueId=${venueId}&agentId=${agentId}&lane=${agentConfig.lane || 'openai'}`,
         embed: `/embed/runner?venueId=${venueId}&agentId=${agentId}`,
         api: `/api/voice-cart-direct`

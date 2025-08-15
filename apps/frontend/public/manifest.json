@@ -1,13 +1,40 @@
 {
-  "name": "BevPro Platform",
-  "short_name": "BevPro",
+  "name": "VenueVoice - AI Assistant Builder",
+  "short_name": "VenueVoice",
+  "description": "Build smart assistants for your event venue",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#0b1220",
+  "background_color": "#0f172a",
   "theme_color": "#10b981",
+  "categories": ["business", "productivity", "utilities"],
+  "scope": "/",
+  "orientation": "portrait-primary",
+  "prefer_related_applications": false,
   "icons": [
-    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png" },
-    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png" }
+    { 
+      "src": "/icons/icon-192.png", 
+      "sizes": "192x192", 
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    { 
+      "src": "/icons/icon-512.png", 
+      "sizes": "512x512", 
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Build Assistant",
+      "url": "/build",
+      "description": "Create a new AI assistant"
+    },
+    {
+      "name": "Demo",
+      "url": "/demo",
+      "description": "Try the platform demo"
+    }
   ]
 }
 

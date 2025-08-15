@@ -439,13 +439,6 @@ export const embeddedDrinks = [
     "inventory": 50
   },
   {
-    "name": "Cucumber Cooler",
-    "category": "Non-Alcoholic",
-    "subcategory": "Other",
-    "price": 4,
-    "inventory": 50
-  },
-  {
     "name": "Lav Lemonade",
     "category": "Non-Alcoholic",
     "subcategory": "Other",

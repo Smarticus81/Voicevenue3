@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
+import { motion } from 'framer-motion';
+import { Wifi, Server, Zap, AlertCircle, CheckCircle, Loader } from 'lucide-react';
 
 export default function VoiceStatusPage() {
   const [wsStatus, setWsStatus] = useState<'checking' | 'connected' | 'failed'>('checking');
@@ -64,67 +66,140 @@ export default function VoiceStatusPage() {
     checkOpenAI();
   }, []);
 
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case 'connected': return <CheckCircle size={20} className="text-emerald-400" />;
+      case 'failed': return <AlertCircle size={20} className="text-red-400" />;
+      case 'checking': return <Loader size={20} className="text-yellow-400 animate-spin" />;
+      default: return null;
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'connected': return 'border-emerald-500/30 bg-emerald-500/10';
+      case 'failed': return 'border-red-500/30 bg-red-500/10';
+      case 'checking': return 'border-yellow-500/30 bg-yellow-500/10';
+      default: return 'border-white/20 bg-white/5';
+    }
+  };
+
   return (
-    <div className="p-8 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">Voice Application Status</h1>
-      
-      <div className="space-y-4">
-        <div className="border rounded-lg p-4">
-          <h2 className="text-lg font-semibold mb-2">WebSocket Server (Deepgram)</h2>
-          <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${
-              wsStatus === 'connected' ? 'bg-green-500' : 
-              wsStatus === 'failed' ? 'bg-red-500' : 'bg-yellow-500'
-            }`} />
-            <span className="capitalize">{wsStatus}</span>
+    <div className="min-h-screen" style={{ background: 'var(--bg-primary)', color: 'var(--text-primary)' }}>
+      <motion.header 
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="glass-panel border-b border-white/10"
+      >
+        <div className="max-w-4xl mx-auto px-6 py-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-violet-500 to-purple-500 flex items-center justify-center">
+              <Zap size={24} className="text-white" />
+            </div>
+            <div>
+              <div className="flex items-center gap-3 mb-1">
+                <h1 className="text-2xl font-bold text-white">Voice System Status</h1>
+                <img 
+                  src="/bevpro-logo.svg" 
+                  alt="BevPro" 
+                  className="h-5 w-auto opacity-60"
+                />
+              </div>
+              <p className="text-sm text-white/60">Monitor voice infrastructure health</p>
+            </div>
           </div>
-          <p className="text-sm text-gray-600 mt-1">
-            {wsStatus === 'connected' ? 'WebSocket server is running on port 8787' :
-             wsStatus === 'failed' ? 'WebSocket server is not running. Run: npm run dev:voice' :
-             'Checking WebSocket connection...'}
-          </p>
         </div>
+      </motion.header>
 
-        <div className="border rounded-lg p-4">
-          <h2 className="text-lg font-semibold mb-2">API Endpoints</h2>
-          <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${
-              apiStatus === 'connected' ? 'bg-green-500' : 
-              apiStatus === 'failed' ? 'bg-red-500' : 'bg-yellow-500'
-            }`} />
-            <span className="capitalize">{apiStatus}</span>
+      <div className="p-6">
+        <div className="max-w-4xl mx-auto">
+          <div className="grid gap-4 md:grid-cols-3 mb-6">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className={`glass rounded-2xl p-6 border ${getStatusColor(wsStatus)}`}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <Wifi size={24} className="text-white/80" />
+                <h2 className="text-lg font-semibold text-white">WebSocket Server</h2>
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                {getStatusIcon(wsStatus)}
+                <span className="capitalize text-white font-medium">{wsStatus}</span>
+              </div>
+              <p className="text-sm text-white/60">
+                {wsStatus === 'connected' ? 'Running on port 8787' :
+                 wsStatus === 'failed' ? 'Not running. Use: npm run dev:voice' :
+                 'Checking connection...'}
+              </p>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 }}
+              className={`glass rounded-2xl p-6 border ${getStatusColor(apiStatus)}`}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <Server size={24} className="text-white/80" />
+                <h2 className="text-lg font-semibold text-white">API Endpoints</h2>
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                {getStatusIcon(apiStatus)}
+                <span className="capitalize text-white font-medium">{apiStatus}</span>
+              </div>
+              <p className="text-sm text-white/60">
+                {apiStatus === 'connected' ? 'All endpoints responding' :
+                 apiStatus === 'failed' ? 'Endpoints not responding' :
+                 'Checking endpoints...'}
+              </p>
+            </motion.div>
+
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className={`glass rounded-2xl p-6 border ${getStatusColor(openaiStatus)}`}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <Zap size={24} className="text-white/80" />
+                <h2 className="text-lg font-semibold text-white">OpenAI API</h2>
+              </div>
+              <div className="flex items-center gap-2 mb-2">
+                {getStatusIcon(openaiStatus)}
+                <span className="capitalize text-white font-medium">{openaiStatus}</span>
+              </div>
+              <p className="text-sm text-white/60">
+                {openaiStatus === 'connected' ? 'API key valid' :
+                 openaiStatus === 'failed' ? 'API key invalid or missing' :
+                 'Checking API access...'}
+              </p>
+            </motion.div>
           </div>
-          <p className="text-sm text-gray-600 mt-1">
-            {apiStatus === 'connected' ? 'API endpoints are working' :
-             apiStatus === 'failed' ? 'API endpoints are not responding' :
-             'Checking API endpoints...'}
-          </p>
-        </div>
 
-        <div className="border rounded-lg p-4">
-          <h2 className="text-lg font-semibold mb-2">OpenAI API</h2>
-          <div className="flex items-center gap-2">
-            <div className={`w-3 h-3 rounded-full ${
-              openaiStatus === 'connected' ? 'bg-green-500' : 
-              openaiStatus === 'failed' ? 'bg-red-500' : 'bg-yellow-500'
-            }`} />
-            <span className="capitalize">{openaiStatus}</span>
-          </div>
-          <p className="text-sm text-gray-600 mt-1">
-            {openaiStatus === 'connected' ? 'OpenAI API is accessible' :
-             openaiStatus === 'failed' ? 'OpenAI API key may be invalid or missing' :
-             'Checking OpenAI API...'}
-          </p>
-        </div>
-
-        <div className="border rounded-lg p-4 bg-blue-50">
-          <h2 className="text-lg font-semibold mb-2">Troubleshooting</h2>
-          <ul className="text-sm space-y-1">
-            <li>• Make sure both servers are running: <code className="bg-gray-200 px-1 rounded">npm run dev:all</code></li>
-            <li>• Check that environment variables are set in <code className="bg-gray-200 px-1 rounded">.env.local</code></li>
-            <li>• Ensure microphone permissions are granted</li>
-            <li>• Check browser console for detailed error messages</li>
-          </ul>
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="glass rounded-2xl p-6 border border-blue-500/30 bg-blue-500/10"
+          >
+            <h2 className="text-lg font-semibold text-white mb-4">Troubleshooting</h2>
+            <div className="grid gap-3 md:grid-cols-2">
+              <div className="space-y-2">
+                <div className="text-sm text-white/80">Start servers:</div>
+                <code className="block bg-white/10 px-3 py-2 rounded-lg text-sm text-emerald-400">npm run dev:all</code>
+              </div>
+              <div className="space-y-2">
+                <div className="text-sm text-white/80">Environment setup:</div>
+                <code className="block bg-white/10 px-3 py-2 rounded-lg text-sm text-emerald-400">.env.local</code>
+              </div>
+            </div>
+            <div className="mt-4 space-y-1 text-sm text-white/60">
+              <div>• Ensure microphone permissions are granted</div>
+              <div>• Check browser console for detailed error messages</div>
+              <div>• Verify OpenAI API key in environment variables</div>
+            </div>
+          </motion.div>
         </div>
       </div>
     </div>

@@ -5,9 +5,9 @@ import { ThemeProvider } from '@/components/ThemeProvider';
 import Navigation from '@/components/Navigation';
 
 export const metadata: Metadata = {
-  title: 'VenueVoice',
-  description: 'Premium voice-enabled POS & inventory management platform',
-  keywords: ['POS', 'inventory', 'voice', 'AI', 'Bar', 'bar', 'management'],
+  title: 'VenueVoice - Event Venue AI Agent Platform',
+  description: 'Build AI agents and agentic kiosks specifically for event venues. Voice-powered, real-time, and venue-focused.',
+  keywords: ['event venue', 'AI agent', 'voice AI', 'agentic kiosk', 'venue management', 'event technology'],
   authors: [{ name: 'VenueVoice' }],
   robots: 'index, follow',
 };

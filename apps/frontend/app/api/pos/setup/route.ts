@@ -21,7 +21,7 @@ export async function POST(req: Request) {
         venueId,
         name: String(m.name || "").trim(),
         category: String(m.category || "Drinks").trim(),
-        price: String(m.price ?? "0"),
+        price: String(typeof m.price === 'number' ? (m.price * 100) : (parseFloat(m.price) * 100) || 0), // Convert to cents
         imgUrl: m.imgUrl || null,
         recipeNote: m.recipeNote || null,
       }))

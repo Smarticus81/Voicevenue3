@@ -2,9 +2,10 @@
 import { useEffect, useRef, useState, useCallback } from "react";
 import { logEvent } from "@/components/analytics/logEvent";
 import { createClientTrace, ingestSpan } from "@/components/trace/traceClient";
+import { getSimpleInstructions } from "@/server/prompts/system-prompts";
 
 export default function OpenAIRealtimeWidget({
-  instructions: propInstructions = "You are Bev, the bar voice agent. Keep replies short; speak naturally.",
+  instructions: propInstructions,
   voice = "sage",
   venueId,
   agentId,
@@ -12,7 +13,7 @@ export default function OpenAIRealtimeWidget({
   const [status, setStatus] = useState<"idle" | "connecting" | "connected" | "error">("idle");
   const [error, setError] = useState("");
   const [partial, setPartial] = useState("");
-  const [instructions, setInstructions] = useState<string>(propInstructions);
+  const [instructions, setInstructions] = useState<string>(propInstructions || getSimpleInstructions());
   const currentVenueId = venueId || "demo-venue";
   const currentAgentId = agentId || "demo-agent";
   const [vendor, setVendor] = useState<any>(null);
@@ -32,6 +33,10 @@ export default function OpenAIRealtimeWidget({
     if (audioElRef.current) {
       audioElRef.current.autoplay = true;
       audioElRef.current.crossOrigin = "anonymous";
+      audioElRef.current.preload = "auto";
+      // Optimize for real-time audio
+      audioElRef.current.setAttribute('playsinline', 'true');
+      audioElRef.current.setAttribute('webkit-playsinline', 'true');
     }
   }, []);
 
@@ -81,9 +86,18 @@ export default function OpenAIRealtimeWidget({
     const hasMic = devices.some(d => d.kind === "audioinput");
     if (!hasMic) throw new Error("No microphone found. Connect a mic and try again.");
 
-    // Must be user-gesture initiated
+    // Ultra-low latency audio settings
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true },
+      audio: { 
+        echoCancellation: true, 
+        noiseSuppression: true,
+        autoGainControl: true,
+        sampleRate: 16000,        // Optimized for OpenAI
+        sampleSize: 16,           // 16-bit samples
+        channelCount: 1,          // Mono for lower bandwidth
+        latency: 0.01,            // Request 10ms latency
+        volume: 1.0
+      },
       video: false,
     });
     return stream;
@@ -107,8 +121,16 @@ export default function OpenAIRealtimeWidget({
       if (localAbort.signal.aborted) throw new Error("aborted");
       streamRef.current = stream;
 
-      // 2) Create RTCPeerConnection
-      const pc = new RTCPeerConnection({ iceServers: [{ urls: "stun:stun.l.google.com:19302" }] });
+      // 2) Create RTCPeerConnection with optimized settings
+      const pc = new RTCPeerConnection({ 
+        iceServers: [
+          { urls: "stun:stun.l.google.com:19302" },
+          { urls: "stun:stun1.l.google.com:19302" }
+        ],
+        iceCandidatePoolSize: 10,           // Pre-gather candidates
+        bundlePolicy: "balanced",           // Optimize bundle strategy
+        rtcpMuxPolicy: "require"            // Reduce port usage
+      });
       pcRef.current = pc;
 
       // 3) Attach mic track
@@ -147,7 +169,15 @@ export default function OpenAIRealtimeWidget({
           type: "session.update",
           session: {
             modalities: ["text", "audio"],
-            instructions: instructions,
+            instructions: `${instructions}
+
+CRITICAL: Process complete orders in one fluid conversation turn. Use multiple tools sequentially without waiting for user permission between tools. When handling orders:
+1. Add all requested items to cart using cart_add (one call per item)
+2. View cart contents using cart_view
+3. Create the order using cart_create_order
+4. Provide final confirmation
+
+Execute all necessary tools automatically as part of processing the user's complete request. Never pause between tool calls asking for permission.`,
             voice: voice || "sage",
             input_audio_format: "pcm16",
             output_audio_format: "pcm16",
@@ -156,20 +186,22 @@ export default function OpenAIRealtimeWidget({
             },
             turn_detection: {
               type: "server_vad",
-              threshold: 0.5,
-              prefix_padding_ms: 300,
-              silence_duration_ms: 800
+              threshold: 0.3,               // Lower threshold for faster detection
+              prefix_padding_ms: 150,       // Reduced padding for faster response
+              silence_duration_ms: 400      // Shorter silence for quicker turns
             },
+            tool_choice: "auto",
+            parallel_tool_calls: true,
             tools: [
               {
                 type: "function",
                 name: "cart_add",
-                description: "Add a drink to the cart",
+                description: "Add a drink to the cart. Use this for each item the user wants to order.",
                 parameters: {
                   type: "object",
                   properties: {
                     drink_name: { type: "string", description: "Name of the drink" },
-                    quantity: { type: "number", description: "Quantity to add" }
+                    quantity: { type: "number", description: "Quantity to add", default: 1 }
                   },
                   required: ["drink_name"]
                 }
@@ -177,41 +209,44 @@ export default function OpenAIRealtimeWidget({
               {
                 type: "function", 
                 name: "cart_view",
-                description: "View the current cart contents",
+                description: "View the current cart contents. Use this to check cart before finalizing order.",
                 parameters: { type: "object", properties: {} }
               },
               {
                 type: "function",
                 name: "cart_create_order", 
-                description: "Create an order from the cart",
+                description: "Create an order from the cart. Use this to finalize the order after adding items.",
                 parameters: { type: "object", properties: {} }
               },
               {
                 type: "function",
                 name: "search_drinks",
-                description: "Search for drinks by name",
+                description: "Search for drinks by name or type. Use when user asks about menu items.",
                 parameters: {
                   type: "object",
                   properties: {
                     query: { type: "string", description: "Search query" }
-                  }
+                  },
+                  required: ["query"]
                 }
               },
               {
                 type: "function",
                 name: "list_drinks",
-                description: "List all available drinks",
+                description: "List all available drinks. Use when user wants to see full menu.",
                 parameters: { type: "object", properties: {} }
               }
             ]
           }
         }));
         
-        // Send initial response.create to enable audio output
+        // Send initial response.create to enable audio output with optimized settings
         dc.send(JSON.stringify({
           type: "response.create",
           response: {
-            modalities: ["text", "audio"]
+            modalities: ["text", "audio"],
+            max_output_tokens: 50,       // Very short initial response
+            temperature: 0.1             // Deterministic initial behavior
           }
         }));
       };
@@ -273,7 +308,7 @@ export default function OpenAIRealtimeWidget({
                 const data = await result.json();
                 console.log(`[OpenAI] Tool result:`, data);
                 
-                // Send function result back to OpenAI
+                // Send function result back to OpenAI and continue response automatically
                 if (dcRef.current?.readyState === "open") {
                   dcRef.current.send(JSON.stringify({
                     type: "conversation.item.create",
@@ -283,9 +318,41 @@ export default function OpenAIRealtimeWidget({
                       output: JSON.stringify(data.result || data)
                     }
                   }));
+                  
+                  // Immediately trigger response generation to continue processing
+                  dcRef.current.send(JSON.stringify({
+                    type: "response.create",
+                    response: {
+                      modalities: ["text", "audio"],
+                      max_output_tokens: 80,      // Shorter for faster tool chaining
+                      temperature: 0.2            // More deterministic tool responses
+                    }
+                  }));
                 }
               } catch (err) {
                 console.error(`[OpenAI] Function call failed:`, err);
+                
+                // Send error result back to allow continuation
+                if (dcRef.current?.readyState === "open") {
+                  dcRef.current.send(JSON.stringify({
+                    type: "conversation.item.create",
+                    item: {
+                      type: "function_call_output",
+                      call_id: msg.call_id,
+                      output: JSON.stringify({ error: (err as any)?.message || "Tool execution failed" })
+                    }
+                  }));
+                  
+                  // Continue response even after error
+                  dcRef.current.send(JSON.stringify({
+                    type: "response.create",
+                    response: {
+                      modalities: ["text", "audio"],
+                      max_output_tokens: 60,      // Short error responses
+                      temperature: 0.1            // Very deterministic error handling
+                    }
+                  }));
+                }
               }
             })();
           }
@@ -323,19 +390,20 @@ export default function OpenAIRealtimeWidget({
       if (localAbort.signal.aborted) throw new Error("aborted");
       await pc.setLocalDescription(offer);
 
-      // Wait briefly for ICE gathering
+      // Minimal ICE gathering for faster connection
       await new Promise<void>((resolve) => {
         if (!pcRef.current) return resolve();
         if (pcRef.current.iceGatheringState === "complete") return resolve();
         const onStateChange = () => {
           if (!pcRef.current) return;
-          if (pcRef.current.iceGatheringState === "complete") {
+          if (pcRef.current.iceGatheringState === "complete" || pcRef.current.iceGatheringState === "gathering") {
             pcRef.current.removeEventListener("icegatheringstatechange", onStateChange);
             resolve();
           }
         };
         pcRef.current.addEventListener("icegatheringstatechange", onStateChange);
-        setTimeout(() => resolve(), 1200);
+        // Reduced timeout for faster connection - proceed even if gathering isn't complete
+        setTimeout(() => resolve(), 300);
       });
 
       const sdp = pc.localDescription?.sdp;
@@ -349,31 +417,48 @@ export default function OpenAIRealtimeWidget({
       if (localAbort.signal.aborted) throw new Error("aborted");
       await pc.setRemoteDescription({ type: "answer", sdp: answer });
 
-      // 8) Configure session (instructions, VAD, transcription, TTS voice)
+      // 8) Configure session (instructions, VAD, transcription, TTS voice) - reduced delay
       setTimeout(() => {
         if (dcRef.current?.readyState === "open") {
-          console.log(`[OpenAI] Configuring session with instructions: ${instructions.substring(0, 100)}...`);
+          console.log(`[OpenAI] Updating session with vendor-specific voice: ${vendor?.realtimeVoice || voice}`);
           dcRef.current.send(
             JSON.stringify({
               type: "session.update",
               session: {
-                instructions,
+                instructions: `${instructions}
+
+CRITICAL: Process complete orders in one fluid conversation turn. Use multiple tools sequentially without waiting for user permission between tools. When handling orders:
+1. Add all requested items to cart using cart_add (one call per item)
+2. View cart contents using cart_view
+3. Create the order using cart_create_order
+4. Provide final confirmation
+
+Execute all necessary tools automatically as part of processing the user's complete request. Never pause between tool calls asking for permission.`,
                 voice: vendor?.realtimeVoice || voice,
                 input_audio_transcription: { model: "whisper-1" },
                 turn_detection: {
                   type: "server_vad",
-                  threshold: 0.5,
-                  prefix_padding_ms: 300,
-                  silence_duration_ms: 800
-                }
+                  threshold: 0.3,               // Lower threshold for faster detection
+                  prefix_padding_ms: 150,       // Reduced padding for faster response
+                  silence_duration_ms: 400      // Shorter silence for quicker turns
+                },
+                tool_choice: "auto",
+                parallel_tool_calls: true
               },
             }),
           );
           dcRef.current.send(
-            JSON.stringify({ type: "response.create", response: { modalities: ["text", "audio"], max_output_tokens: 120 } }),
+            JSON.stringify({ 
+              type: "response.create", 
+              response: { 
+                modalities: ["text", "audio"], 
+                max_output_tokens: 100,        // Shorter responses for faster delivery
+                temperature: 0.3               // More predictable, faster responses
+              } 
+            }),
           );
         }
-      }, 200);
+      }, 50);  // Reduced from 200ms to 50ms for faster initialization
     } catch (err: any) {
       if (err?.name === "NotAllowedError") setError("Mic permission denied. Click Start and allow mic.");
       else if (err?.name === "NotFoundError") setError("No microphone found. Connect one and click Start.");
@@ -403,6 +488,15 @@ export default function OpenAIRealtimeWidget({
 
   return (
     <div className="neuro-card p-6 space-y-6">
+      {/* BevPro Logo */}
+      <div className="flex justify-center mb-4">
+        <img 
+          src="/bevpro-logo.svg" 
+          alt="BevPro" 
+          className="h-6 w-auto opacity-60"
+        />
+      </div>
+      
       {/* Enhanced Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">

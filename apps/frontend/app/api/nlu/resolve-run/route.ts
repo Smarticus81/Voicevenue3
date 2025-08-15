@@ -16,6 +16,20 @@ export async function POST(req: Request) {
     // Simple intent matching for bar operations
     let response = { say: "" };
 
+    // 1) Finalize/checkout intents first to avoid mis-parsing as an item
+    const finalizeIntent = /\b(process( the)? order|go ahead( and)? (process|complete)|complete( the)? order|finali[sz]e( the)? order|checkout|place( the)? order|submit order|process it)\b/i;
+    if (finalizeIntent.test(input)) {
+      try {
+        const result = await invokeMcpToolDirect('cart_create_order', { clientId: venueId });
+        const total = result.total || 0;
+        const dollars = (total / 100).toFixed(2);
+        return NextResponse.json({ say: `Order placed. Total: $${dollars}.` });
+      } catch (err) {
+        console.error('[NLU] Checkout error:', err);
+        return NextResponse.json({ say: 'Sorry, I had trouble processing the order.' });
+      }
+    }
+
     // Handle common ordering patterns like "Can I get 3 miller lights"
     const orderPatterns = [
       /(?:can i get|i'll have|give me|i want|i'd like)\s+(\d+)?\s*(.+?)(?:\s+please)?$/i,
@@ -120,7 +134,7 @@ export async function POST(req: Request) {
         response.say = `Cart has: ${items}.`;
       }
     }
-    else if (input.includes('checkout') || input.includes('place order') || input.includes('create order')) {
+    else if (input.includes('checkout') || input.includes('place order') || input.includes('create order') || input.includes('process order')) {
       const result = await invokeMcpToolDirect('cart_create_order', { clientId: venueId });
       const total = result.total || 0;
       response.say = `Order placed. Total: $${(total / 100).toFixed(2)}.`;
@@ -151,7 +165,7 @@ export async function POST(req: Request) {
       }
     }
     else if (input.includes('help')) {
-      response.say = "I can help you add drinks to cart, view cart, checkout, or search our menu.";
+      response.say = "You can say things like: 'add two margaritas', 'what's on the menu', or 'process the order'.";
     }
     else {
       // Default response for bar context

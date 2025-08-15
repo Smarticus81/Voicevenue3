@@ -5,7 +5,7 @@
 @tailwind utilities;
 
 :root {
-  /* Neumorphic Dark Theme */
+  /* Dark Theme (Default) */
   --bg-primary: #0f172a;
   --bg-secondary: #1e293b;
   --bg-tertiary: #334155;
@@ -144,17 +144,17 @@
   display: none;
 }
 
-.light {
-  /* Neumorphic Light Theme */
-  --bg-primary: #f8fafc;
-  --bg-secondary: #f1f5f9;
-  --bg-tertiary: #e2e8f0;
-  --bg-quaternary: #cbd5e1;
+[data-theme="light"] {
+  /* Light Theme */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8fafc;
+  --bg-tertiary: #f1f5f9;
+  --bg-quaternary: #e2e8f0;
   
   --surface: rgba(15, 23, 42, 0.06);
   --surface-hover: rgba(15, 23, 42, 0.1);
   --surface-active: rgba(15, 23, 42, 0.14);
-  --surface-glass: rgba(255, 255, 255, 0.8);
+  --surface-glass: rgba(255, 255, 255, 0.9);
   
   --text-primary: #0f172a;
   --text-secondary: rgba(15, 23, 42, 0.75);
@@ -172,14 +172,14 @@
   --accent-cyan-light: #06b6d4;
   --accent-cyan-dark: #0e7490;
   
-  --gradient-primary: radial-gradient(1200px 600px at 100% -20%, rgba(5,150,105,0.12), transparent);
-  --gradient-secondary: radial-gradient(1000px 600px at 0% 0%, rgba(8,145,178,0.08), transparent);
+  --gradient-primary: radial-gradient(1200px 600px at 100% -20%, rgba(5,150,105,0.08), transparent);
+  --gradient-secondary: radial-gradient(1000px 600px at 0% 0%, rgba(8,145,178,0.05), transparent);
   --gradient-neuro: linear-gradient(145deg, var(--bg-primary), var(--bg-secondary));
   
-  --shadow-neuro: 4px 4px 8px rgba(0,0,0,0.1), -4px -4px 8px rgba(255,255,255,0.9);
-  --shadow-neuro-lg: 9px 9px 16px rgba(0,0,0,0.15), -9px -9px 16px rgba(255,255,255,0.9);
-  --shadow-neuro-inset: inset 2px 2px 4px rgba(0,0,0,0.1), inset -2px -2px 4px rgba(255,255,255,0.9);
-  --shadow-glow: 0 0 20px rgba(5,150,105,0.3);
+  --shadow-neuro: 2px 2px 6px rgba(0,0,0,0.1), -2px -2px 6px rgba(255,255,255,0.9);
+  --shadow-neuro-lg: 6px 6px 12px rgba(0,0,0,0.15), -6px -6px 12px rgba(255,255,255,0.9);
+  --shadow-neuro-inset: inset 1px 1px 3px rgba(0,0,0,0.1), inset -1px -1px 3px rgba(255,255,255,0.9);
+  --shadow-glow: 0 0 20px rgba(5,150,105,0.2);
 }
 
 @layer base {
@@ -269,6 +269,12 @@
     @apply transition-all duration-200;
     background: linear-gradient(145deg, var(--bg-primary), var(--bg-secondary));
     box-shadow: var(--shadow-neuro-inset);
+  }
+  
+  .glass {
+    @apply backdrop-blur-xl rounded-xl border border-white/15;
+    background: var(--surface-glass);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
   }
   
   .glass-panel {

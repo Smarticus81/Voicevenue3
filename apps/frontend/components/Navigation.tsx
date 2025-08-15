@@ -7,11 +7,7 @@ import {
   Home,
   LayoutDashboard, 
   ShoppingCart,
-  Monitor,
-  Settings,
-  Building2,
   TestTube,
-  Mic,
   Sparkles,
   Menu,
   X,
@@ -19,7 +15,8 @@ import {
   LogIn,
   User,
   LogOut,
-  ChevronDown
+  ChevronDown,
+  Settings
 } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
 import { useState, useEffect } from "react";
@@ -29,42 +26,21 @@ import { useRouter } from "next/navigation";
 // This is the single source of truth for navigable pages
 export const ROUTE_MAP = {
   topNav: [
-    { name: "Home", href: "/", description: "Platform overview", icon: Home },
-    { name: "Dashboard", href: "/dashboard", description: "Control center", icon: LayoutDashboard },
-    { name: "Integrations", href: "/integrations/mcp", description: "MCP & connectors", icon: Settings },
-    { name: "Settings", href: "/settings", description: "Venue configuration", icon: Settings },
+    { name: "Home", href: "/", description: "Event venue AI platform", icon: Home },
+    { name: "Workspace", href: "/workspace", description: "Your venue management canvas", icon: LayoutDashboard },
+    { name: "Demo", href: "/demo", description: "Try the platform", icon: TestTube },
   ],
   dashboardSections: [
     {
       title: "Core",
       links: [
-        { href: "/dashboard", label: "Overview", icon: <LayoutDashboard size={18} /> },
-        { href: "/dashboard/agent-builder", label: "Agent Builder", icon: <Mic size={18} /> },
-        { href: "/dashboard/publish", label: "Publish", icon: <Sparkles size={18} /> },
-      ],
-    },
-    {
-      title: "Analytics & Reports",
-      links: [
-        { href: "/dashboard/analytics", label: "Analytics", icon: <Monitor size={18} /> },
-        { href: "/dashboard/reports/closing", label: "Closing Report", icon: <ShoppingCart size={18} /> },
-        { href: "/dashboard/latency-lab", label: "Latency Lab", icon: <TestTube size={18} /> },
-      ],
-    },
-    {
-      title: "Management",
-      links: [
-        { href: "/dashboard/permissions", label: "Permissions", icon: <Building2 size={18} /> },
-        { href: "/dashboard/audit", label: "Audit", icon: <LayoutDashboard size={18} /> },
-        { href: "/dashboard/diagnostics", label: "Diagnostics", icon: <Monitor size={18} /> },
-        { href: "/dashboard/settings", label: "Settings", icon: <Settings size={18} /> },
+        { href: "/workspace", label: "Overview", icon: <LayoutDashboard size={18} /> },
       ],
     },
   ],
   // PWA and voice experiences that are intentionally excluded from nav
   hidden: [
     { name: "Kiosk", href: "/kiosk" },
-    { name: "Voice Test", href: "/voice-test" },
     { name: "Voice Status", href: "/voice-status" },
     { name: "Embed Runner", href: "/embed/runner" },
   ],
@@ -230,12 +206,12 @@ export default function Navigation() {
                         className="absolute right-0 top-full mt-2 w-48 glass-panel p-2 z-50"
                       >
                         <Link
-                          href="/dashboard"
+                          href="/workspace"
                           onClick={() => setShowUserMenu(false)}
                           className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-white/5 text-white/80 hover:text-white transition-all duration-200"
                         >
                           <LayoutDashboard size={16} />
-                          <span className="text-sm">Dashboard</span>
+                          <span className="text-sm">Workspace</span>
                         </Link>
                         <Link
                           href="/settings"
@@ -358,13 +334,13 @@ export default function Navigation() {
                 {isLoggedIn ? (
                   <>
                     <Link
-                      href="/dashboard"
+                      href="/workspace"
                       onClick={() => setIsMobileMenuOpen(false)}
                       className="flex items-center space-x-3 p-3 rounded-neuro bg-emerald-500/20 border border-emerald-400/30 text-emerald-300"
                     >
                       <User size={20} />
                       <div>
-                        <div className="font-medium">Dashboard</div>
+                        <div className="font-medium">Workspace</div>
                         <div className="text-xs text-emerald-400/60">Go to workspace</div>
                       </div>
                     </Link>

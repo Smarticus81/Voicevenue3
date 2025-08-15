@@ -2,64 +2,9 @@
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { 
-  Bot, 
-  Timer, 
-  Settings, 
-  FileText, 
-  Rocket, 
-  Activity,
-  BarChart3,
-  Users,
-  Mic2,
-  Sparkles 
+  BarChart3, User, Settings, Bell, LogOut, Building2
 } from "lucide-react";
 import { useTheme } from "@/components/ThemeProvider";
-
-const dashboardCards = [
-  { 
-    title: "Studio", 
-    href: "/dashboard/studio", 
-    icon: <Sparkles size={24} />,
-    description: "Your playground for building voice experiences",
-    featured: true
-  },
-  { 
-    title: "Agent Builder", 
-    href: "/dashboard/agent-builder", 
-    icon: <Bot size={24} />,
-    description: "Design custom voice workflows"
-  },
-  { 
-    title: "Latency Lab", 
-    href: "/dashboard/latency-lab", 
-    icon: <Timer size={24} />,
-    description: "Optimize response performance"
-  },
-  { 
-    title: "Settings", 
-    href: "/dashboard/settings", 
-    icon: <Settings size={24} />,
-    description: "Configure voice & vendors"
-  },
-  { 
-    title: "Analytics", 
-    href: "/dashboard/analytics", 
-    icon: <BarChart3 size={24} />,
-    description: "Usage insights & metrics"
-  },
-  { 
-    title: "Publish", 
-    href: "/dashboard/publish", 
-    icon: <Rocket size={24} />,
-    description: "Deploy to production"
-  },
-  { 
-    title: "Diagnostics", 
-    href: "/dashboard/diagnostics", 
-    icon: <Activity size={24} />,
-    description: "Debug & troubleshoot"
-  },
-];
 
 export default function DashboardPage() {
   const { theme, toggleTheme } = useTheme();
@@ -74,51 +19,126 @@ export default function DashboardPage() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5 }}
         >
-          <div className="flex items-center space-x-3 mb-2">
-            <div className="w-12 h-12 rounded-neuro bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
-              <BarChart3 size={24} className="text-white" />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 rounded-neuro bg-gradient-to-br from-emerald-500 to-cyan-500 flex items-center justify-center">
+                <Building2 size={24} className="text-white" />
+              </div>
+              <div>
+                <h1 className="text-3xl font-bold text-gradient">Workspace</h1>
+                <p className="text-white/70">Your venue management canvas</p>
+              </div>
             </div>
-            <div>
-              <h1 className="text-3xl font-bold text-gradient">VenueVoice Dashboard</h1>
-              <p className="text-white/70">Control center for your voice-enabled platform</p>
+            
+            <div className="flex items-center gap-4">
+              <img src="/bevpro-logo.svg" alt="BevPro" className="h-8 w-auto opacity-60" />
             </div>
           </div>
         </motion.div>
 
-        {/* Dashboard Cards Grid */}
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {dashboardCards.map((card, index) => (
-            <motion.div
-              key={card.href}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5, delay: index * 0.1 }}
-            >
-              <Link href={card.href}>
-                <div className={`group glass-panel p-6 rounded-neuro hover:scale-105 transition-all duration-300 cursor-pointer ${card.featured ? 'ring-2 ring-emerald-500/50' : ''}`}>
-                  <div className="flex items-start space-x-4">
-                    <div className={`w-12 h-12 rounded-neuro ${card.featured ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' : 'bg-gradient-to-r from-blue-500 to-purple-500'} flex items-center justify-center group-hover:scale-110 transition-transform`}>
-                      {card.icon}
-                    </div>
-                    <div className="flex-1">
-                      <h3 className="text-lg font-semibold mb-2 group-hover:text-gradient transition-all">
-                        {card.title}
-                      </h3>
-                      <p className="text-sm text-white/70 group-hover:text-white/90 transition-colors">
-                        {card.description}
-                      </p>
-                      {card.featured && (
-                        <div className="mt-2 inline-flex items-center text-xs text-emerald-400 font-medium">
-                          ✨ Featured
-                        </div>
-                      )}
-                    </div>
-                  </div>
+        {/* Profile Menu */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
+          className="mb-8"
+        >
+          <div className="glass-panel p-6 rounded-3xl">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-emerald-500 to-blue-500 rounded-full flex items-center justify-center">
+                  <User size={24} className="text-white" />
                 </div>
-              </Link>
+                <div>
+                  <h2 className="text-xl font-semibold text-white">Welcome back!</h2>
+                  <p className="text-white/60">Manage your venue operations</p>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                <button className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center transition-colors">
+                  <Bell size={18} className="text-white/70" />
+                </button>
+                <button className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center transition-colors">
+                  <Settings size={18} className="text-white/70" />
+                </button>
+                <button className="w-10 h-10 bg-white/10 hover:bg-white/20 rounded-xl flex items-center justify-center transition-colors">
+                  <LogOut size={18} className="text-white/70" />
+                </button>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Quick Actions */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8"
+        >
+          <Link href="/build">
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="glass-panel p-6 rounded-2xl cursor-pointer"
+            >
+              <div className="w-12 h-12 bg-emerald-500/20 rounded-xl flex items-center justify-center mb-4">
+                <BarChart3 size={24} className="text-emerald-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Build Assistant</h3>
+              <p className="text-white/60 text-sm">Create voice-powered AI agents for your venue</p>
             </motion.div>
-          ))}
-        </div>
+          </Link>
+
+          <Link href="/demo">
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="glass-panel p-6 rounded-2xl cursor-pointer"
+            >
+              <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4">
+                <Building2 size={24} className="text-blue-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">View Demo</h3>
+              <p className="text-white/60 text-sm">See how voice AI works in action</p>
+            </motion.div>
+          </Link>
+
+          <Link href="/settings">
+            <motion.div 
+              whileHover={{ scale: 1.02 }}
+              className="glass-panel p-6 rounded-2xl cursor-pointer"
+            >
+              <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4">
+                <Settings size={24} className="text-purple-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-2">Settings</h3>
+              <p className="text-white/60 text-sm">Configure your workspace preferences</p>
+            </motion.div>
+          </Link>
+        </motion.div>
+
+        {/* Recent Activity */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.6 }}
+        >
+          <div className="glass-panel p-6 rounded-3xl">
+            <h3 className="text-lg font-semibold text-white mb-4">Recent Activity</h3>
+            <div className="space-y-3">
+              <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
+                <div className="w-2 h-2 bg-emerald-400 rounded-full"></div>
+                <span className="text-white/70 text-sm">Workspace created successfully</span>
+                <span className="text-white/40 text-xs ml-auto">Just now</span>
+              </div>
+              <div className="flex items-center gap-3 p-3 bg-white/5 rounded-xl">
+                <div className="w-2 h-2 bg-blue-400 rounded-full"></div>
+                <span className="text-white/70 text-sm">Ready to build your first AI assistant</span>
+                <span className="text-white/40 text-xs ml-auto">1 min ago</span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
       </div>
     </div>
   );

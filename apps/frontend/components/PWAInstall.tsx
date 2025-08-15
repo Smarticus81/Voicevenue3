@@ -29,7 +29,7 @@ export default function PWAInstall() {
   return (
     <button
       onClick={handleInstall}
-      className="px-4 py-2 rounded-xl glass glass-hover"
+      className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 transition-colors"
     >
       Install POS App
     </button>

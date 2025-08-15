@@ -6,15 +6,6 @@ import { Command } from "cmdk";
 const items = [
   { k: "Dashboard", href: "/dashboard" },
   { k: "Kiosk", href: "/kiosk?venueId=demo-venue&agentId=demo-agent&lane=dg11" },
-  { k: "Agent Builder", href: "/dashboard/agent-builder" },
-  { k: "Publish", href: "/dashboard/publish" },
-  { k: "Settings", href: "/dashboard/settings" },
-  { k: "Analytics", href: "/dashboard/analytics" },
-  { k: "Closing Report", href: "/dashboard/reports/closing" },
-  { k: "Latency Lab", href: "/dashboard/latency-lab" },
-  { k: "Permissions", href: "/dashboard/permissions" },
-  { k: "Audit", href: "/dashboard/audit" },
-  { k: "Diagnostics", href: "/dashboard/diagnostics" },
 ];
 
 export default function CommandPalette() {

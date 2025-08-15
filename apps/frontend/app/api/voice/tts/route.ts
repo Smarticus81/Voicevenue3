@@ -84,6 +84,7 @@ export async function POST(req: Request) {
     const body = await req.json().catch(() => ({ text: "", venueId: "demo-venue" }));
     const text = body?.text || "";
     const venueId = body?.venueId || "demo-venue";
+    const voice = body?.voice as string | undefined;
 
     // read venue settings to pick provider and voice
     const rows = await db.select().from(venueSettings).where(eq(venueSettings.venueId, venueId));
@@ -97,18 +98,18 @@ export async function POST(req: Request) {
     const wantOpenAI = vs?.ttsProvider === "openai";
 
     if (wantOpenAI && OPENAI_KEY) {
-      const mp3 = await openaiTTS(text, vs?.realtimeVoice || "sage");
+      const mp3 = await openaiTTS(text, (vs?.realtimeVoice || voice || "sage"));
       return new NextResponse(mp3, { status: 200, headers: { "Content-Type": "audio/mpeg", "Cache-Control": "no-store", "X-TTS-Provider": "openai" } });
     }
 
     if (ELEVEN_KEY) {
       try {
-        const mp3 = await elevenLabsTTS(text, configuredElevenVoice || ELEVEN_VOICE_DEFAULT);
+        const mp3 = await elevenLabsTTS(text, voice || configuredElevenVoice || ELEVEN_VOICE_DEFAULT);
         return new NextResponse(mp3, { status: 200, headers: { "Content-Type": "audio/mpeg", "Cache-Control": "no-store", "X-TTS-Provider": "elevenlabs" } });
       } catch (e) {
         // graceful fallback to OpenAI TTS if available
         if (OPENAI_KEY) {
-          const mp3 = await openaiTTS(text, vs?.realtimeVoice || "sage");
+          const mp3 = await openaiTTS(text, (vs?.realtimeVoice || voice || "sage"));
           return new NextResponse(mp3, { status: 200, headers: { "Content-Type": "audio/mpeg", "Cache-Control": "no-store", "X-TTS-Provider": "openai-fallback" } });
         }
         throw e;
@@ -116,7 +117,7 @@ export async function POST(req: Request) {
     }
 
     if (!wantOpenAI && OPENAI_KEY) {
-      const mp3 = await openaiTTS(text, vs?.realtimeVoice || "sage");
+      const mp3 = await openaiTTS(text, (vs?.realtimeVoice || voice || "sage"));
       return new NextResponse(mp3, { status: 200, headers: { "Content-Type": "audio/mpeg", "Cache-Control": "no-store", "X-TTS-Provider": "openai-fallback" } });
     }
 

@@ -19,7 +19,8 @@ export async function GET(req: Request) {
       .where(eq(systemConfig.config_key, agentConfigKey))
       .limit(1);
 
-    let instructions = "You are Bev, a helpful voice assistant. Keep replies short and speak naturally.";
+    const { getDefaultInstructions } = await import('@/server/prompts/system-prompts');
+    let instructions = getDefaultInstructions();
     
     console.log(`[API] Looking for agent config: ${agentConfigKey}`);
     console.log(`[API] Found ${result.length} results`);
@@ -68,7 +69,7 @@ export async function GET(req: Request) {
     console.error('Failed to load agent instructions:', e);
     return new Response(JSON.stringify({ 
       error: e?.message || 'Failed to load instructions',
-      instructions: "You are Bev, a helpful voice assistant. Keep replies short and speak naturally."
+      instructions: getDefaultInstructions()
     }), { 
       status: 500,
       headers: { 'Content-Type': 'application/json' }

@@ -8,15 +8,22 @@ import { eq } from 'drizzle-orm';
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const venueId = searchParams.get('venueId') || 'demo-venue';
+    const venueId = searchParams.get('venueId');
+    
+    if (!venueId) {
+      return NextResponse.json(
+        { error: 'venueId parameter is required' },
+        { status: 400 }
+      );
+    }
 
     const rows = await db.select().from(venueSettings).where(eq(venueSettings.venueId, venueId));
 
     if (rows.length === 0) {
-      // Return default settings if no venue found
+      // Return default settings if no venue found - but NO hardcoded venue name
       return NextResponse.json({
         venueId,
-        venueName: 'Demo Venue',
+        venueName: null, // Let frontend handle missing venue name
         asrProvider: 'deepgram',
         asrModel: 'nova-2',
         ttsProvider: 'elevenlabs',
@@ -36,7 +43,7 @@ export async function GET(request: Request) {
     const settings = rows[0];
     return NextResponse.json({
       venueId: settings.venueId,
-      venueName: settings.extras?.venueName || 'Demo Venue',
+      venueName: settings.extras?.venueName || null,
       asrProvider: settings.asrProvider,
       asrModel: settings.asrModel,
       ttsProvider: settings.ttsProvider,
@@ -76,7 +83,7 @@ export async function POST(request: Request) {
 
     const extras = {
       ...(existing[0]?.extras || {}),
-      venueName: venueName || 'Demo Venue'
+      venueName: venueName
     };
 
     const settingsData = {
@@ -99,7 +106,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ 
       success: true, 
       message: 'Venue settings saved successfully',
-      venueName: venueName || 'Demo Venue'
+      venueName: venueName
     });
   } catch (error: any) {
     console.error('Error saving venue settings:', error);

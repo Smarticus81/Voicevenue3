@@ -60,27 +60,24 @@ export async function POST(req: Request) {
     }
 
     // Import database functions
-    const postgres = (await import('postgres')).default;
-    const { drizzle } = await import('drizzle-orm/postgres-js');
-    const { drinks } = await import('../../../../server/db/schema');
-
-    const client = postgres(process.env.DATABASE_URL!, { ssl: 'require', prepare: false });
-    const db = drizzle(client);
+    const { db } = await import('../../../../server/db/client');
+    const { menuItems } = await import('../../../../server/db/schema.pos');
+    const { eq } = await import('drizzle-orm');
 
     // Clear existing items for this venue
-    await db.delete(drinks);
+    await db.delete(menuItems).where(eq(menuItems.venueId, venueId));
 
     // Insert template items
     const itemsToInsert = templateData.items.map(item => ({
+      venueId,
       name: item.name,
       category: item.category,
-      price: item.price,
-      inventory: item.stock,
-      is_active: true
+      price: (item.price * 100).toString(), // Convert dollars to cents for storage
+      imgUrl: null,
+      recipeNote: null
     }));
 
-    await db.insert(drinks).values(itemsToInsert);
-    await client.end({ timeout: 5 });
+    await db.insert(menuItems).values(itemsToInsert);
 
     return new Response(JSON.stringify({ 
       ok: true, 

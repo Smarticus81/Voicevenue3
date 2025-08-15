@@ -470,6 +470,15 @@ export default function VoiceAgent({ autoStart = false, hideControls = false, on
 
   return (
     <div className="neuro-card p-6 space-y-6">
+      {/* BevPro Logo */}
+      <div className="flex justify-center mb-4">
+        <img 
+          src="/bevpro-logo.svg" 
+          alt="BevPro" 
+          className="h-6 w-auto opacity-60"
+        />
+      </div>
+      
       {/* Status Display */}
       <div className="glass-panel p-4 space-y-3">
         <div className="flex items-center justify-between">

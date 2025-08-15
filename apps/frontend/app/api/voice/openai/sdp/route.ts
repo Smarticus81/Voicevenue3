@@ -34,7 +34,8 @@ export async function POST(req: NextRequest) {
       config_value: systemConfig.config_value 
     }).from(systemConfig).where(eq(systemConfig.config_key, agentConfigKey)).limit(1);
 
-    let instructions = "You are Bev, a helpful voice assistant. Keep replies short and speak naturally.";
+    const { getDefaultInstructions } = await import('@/server/prompts/system-prompts');
+    let instructions = getDefaultInstructions();
     
     if (agentResult.length > 0) {
       try {

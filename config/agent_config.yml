@@ -1,9 +1,0 @@
-personality: "Helpful bar assistant"
-rules:
-  - "Be concise and friendly"
-  - "Ask clarifying questions when needed"
-model:
-  provider: openai
-  name: gpt-4o-mini
-  temperature: 0.3
-

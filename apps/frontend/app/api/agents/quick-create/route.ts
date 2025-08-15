@@ -33,17 +33,21 @@ export async function POST(req: Request) {
     const client = postgres(process.env.DATABASE_URL!, { ssl: 'require', prepare: false });
     const db = drizzle(client);
 
+    // Import unified prompt functions
+    const { createPersonalizedPrompt, getBevInstructions } = await import('@/server/prompts/system-prompts');
+    
     // Create personalized personality
     let personalizedPersonality: string;
     
     if (data.useCustomInstructions && data.customInstructions?.trim()) {
       // Use custom instructions with business name substitution
       personalizedPersonality = data.customInstructions.replace(/\[Business Name\]/g, data.businessName);
-      // Append core behavioral rules
-      personalizedPersonality += ` Be ultra-concise (<=15 words). Speak in past tense during order operations. Never ask "anything else"; stop talking on termination phrases and return to wake mode. Use tools for ALL business actions — no generic replies.`;
+      // Append core behavioral rules from unified prompts
+      const coreRules = getBevInstructions().split('\n').slice(1).join('\n'); // Skip first line, get rules
+      personalizedPersonality += `\n\n${coreRules}`;
     } else {
-      // Use default hardwired bartender personality
-      personalizedPersonality = `You are the AI voice assistant for ${data.businessName}. ${data.personality}. Be ultra-concise (<=15 words). Speak in past tense during order operations. Never ask "anything else"; stop talking on termination phrases and return to wake mode. Use tools for ALL business actions — no generic replies.`;
+      // Use unified prompt system to create personalized prompt
+      personalizedPersonality = createPersonalizedPrompt(data.businessName, data.personality);
     }
 
     // Save agent configuration

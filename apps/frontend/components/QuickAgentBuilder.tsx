@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { getAgentPresetPersonality } from "@/server/prompts/system-prompts";
 
 interface QuickBuilderProps {
   venueId?: string;
@@ -9,25 +10,39 @@ interface QuickBuilderProps {
 
 const QUICK_PRESETS = {
   basic: {
-    personality: "You are a professional bar assistant who helps customers order drinks, cocktails, and alcoholic beverages. Provide friendly service and recommendations.",
+    personality: getAgentPresetPersonality("basic"),
     voice: "sage",
     lane: "openai",
     tools: ["cart_add", "cart_view", "cart_create_order", "search_drinks", "list_drinks"],
     wake: { phrase: "hey bev", fuzz: 2 }
   },
   retail: {
-    personality: "Professional retail assistant focused on sales",
+    personality: getAgentPresetPersonality("retail"),
     voice: "sage", 
     lane: "openai",
     tools: ["cart_add", "cart_view", "cart_create_order", "search_drinks", "list_drinks", "inventory_check"],
     wake: { phrase: "hey assistant", fuzz: 2 }
   },
   Bar: {
-    personality: "Friendly Bar order assistant",
+    personality: getAgentPresetPersonality("bar"),
     voice: "sage",
     lane: "openai", 
     tools: ["cart_add", "cart_view", "cart_create_order", "search_drinks", "list_drinks", "table_management"],
     wake: { phrase: "hey order", fuzz: 2 }
+  },
+  rag: {
+    personality: getAgentPresetPersonality("rag"),
+    voice: "sage",
+    lane: "openai",
+    tools: ["search_documents", "upload_document", "list_documents", "delete_document", "summarize_document"],
+    wake: { phrase: "hey assistant", fuzz: 2 }
+  },
+  "flexible-rag": {
+    personality: "You are a flexible data assistant capable of working with various data sources and formats.",
+    voice: "sage",
+    lane: "openai",
+    tools: ["analyze_document", "query_database", "read_spreadsheet", "write_spreadsheet", "search_web", "transform_data", "generate_report", "connect_api"],
+    wake: { phrase: "hey data assistant", fuzz: 2 }
   }
 };
 
@@ -35,6 +50,8 @@ const POS_TEMPLATES = [
   { id: "drinks", name: "Bar/Drinks", description: "Perfect for bars, pubs, and beverage service" },
   { id: "retail", name: "Retail Store", description: "General retail with inventory management" },
   { id: "Bar", name: "Bar", description: "Full service Bar with orders" },
+  { id: "rag", name: "Voice RAG Assistant", description: "AI assistant with document knowledge base" },
+  { id: "flexible-rag", name: "Flexible Data Assistant", description: "AI assistant for any data source - databases, spreadsheets, APIs" },
   { id: "custom", name: "Custom Setup", description: "Start with basic POS and customize" }
 ];
 
@@ -53,47 +70,71 @@ export default function QuickAgentBuilder({ venueId = "demo-venue", onComplete }
     inventoryFile: null as File | null,
     databaseUrl: "",
     customInstructions: "",
-    useCustomInstructions: false
+    useCustomInstructions: false,
+    ragDocuments: [] as File[],
+    deploymentType: "kiosk" // "kiosk" | "standalone"
   });
 
   const handleQuickSetup = async () => {
     setLoading(true);
     try {
-      // Step 1: Handle inventory setup based on source
-      if (agentData.inventorySource === "template") {
-        // Use template data
-        await fetch("/api/pos/quick-setup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            venueId: agentData.venueId,
-            template: agentData.posTemplate,
-            businessName: agentData.businessName,
-            source: "template"
-          })
-        });
-      } else if (agentData.inventorySource === "upload" && agentData.inventoryFile) {
-        // Handle file upload
-        const formData = new FormData();
-        formData.append("file", agentData.inventoryFile);
-        formData.append("venueId", agentData.venueId);
-        formData.append("businessName", agentData.businessName);
+      // Step 1: Handle setup based on template type
+      if (agentData.posTemplate === "rag") {
+        // Handle RAG agent setup
+        if (agentData.ragDocuments.length > 0) {
+          const formData = new FormData();
+          agentData.ragDocuments.forEach((file, index) => {
+            formData.append(`document_${index}`, file);
+          });
+          formData.append("venueId", agentData.venueId);
+          formData.append("agentId", agentData.agentId);
+          formData.append("businessName", agentData.businessName);
+          
+          await fetch("/api/rag/upload-documents", {
+            method: "POST",
+            body: formData
+          });
+        }
         
-        await fetch("/api/inventory/upload", {
-          method: "POST",
-          body: formData
-        });
-      } else if (agentData.inventorySource === "database") {
-        // Handle database connection
-        await fetch("/api/inventory/connect-database", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            venueId: agentData.venueId,
-            databaseUrl: agentData.databaseUrl,
-            businessName: agentData.businessName
-          })
-        });
+        // Set deployment type for RAG agents
+        agentData.deploymentType = "standalone";
+      } else {
+        // Handle inventory setup for POS agents
+        if (agentData.inventorySource === "template") {
+          // Use template data
+          await fetch("/api/pos/quick-setup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              venueId: agentData.venueId,
+              template: agentData.posTemplate,
+              businessName: agentData.businessName,
+              source: "template"
+            })
+          });
+        } else if (agentData.inventorySource === "upload" && agentData.inventoryFile) {
+          // Handle file upload
+          const formData = new FormData();
+          formData.append("file", agentData.inventoryFile);
+          formData.append("venueId", agentData.venueId);
+          formData.append("businessName", agentData.businessName);
+          
+          await fetch("/api/inventory/upload", {
+            method: "POST",
+            body: formData
+          });
+        } else if (agentData.inventorySource === "database") {
+          // Handle database connection
+          await fetch("/api/inventory/connect-database", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              venueId: agentData.venueId,
+              databaseUrl: agentData.databaseUrl,
+              businessName: agentData.businessName
+            })
+          });
+        }
       }
 
       // Step 2: Create agent with preset
@@ -131,7 +172,7 @@ export default function QuickAgentBuilder({ venueId = "demo-venue", onComplete }
         body: JSON.stringify({
           agentId: agentData.agentId,
           venueId: agentData.venueId,
-          deploymentType: "kiosk"
+          deploymentType: agentData.deploymentType
         })
       });
 
@@ -150,8 +191,15 @@ export default function QuickAgentBuilder({ venueId = "demo-venue", onComplete }
   };
 
   const openKiosk = () => {
-    const kioskUrl = `/kiosk?venueId=${agentData.venueId}&agentId=${agentData.agentId}&lane=${agentData.lane}`;
-    window.open(kioskUrl, '_blank');
+    let url;
+    if (agentData.posTemplate === "rag") {
+      url = `/rag-agent?venueId=${agentData.venueId}&agentId=${agentData.agentId}&lane=${agentData.lane}`;
+    } else if (agentData.posTemplate === "flexible-rag") {
+      url = `/flexible-rag?venueId=${agentData.venueId}&agentId=${agentData.agentId}&lane=${agentData.lane}`;
+    } else {
+      url = `/kiosk?venueId=${agentData.venueId}&agentId=${agentData.agentId}&lane=${agentData.lane}`;
+    }
+    window.open(url, '_blank');
   };
 
   return (
@@ -299,6 +347,48 @@ export default function QuickAgentBuilder({ venueId = "demo-venue", onComplete }
               />
               <div className="text-xs text-white/50">
                 Supports PostgreSQL, MySQL, and SQL Server connections
+              </div>
+            </div>
+          )}
+
+          {/* RAG Document Upload */}
+          {agentData.posTemplate === "rag" && (
+            <div className="space-y-3">
+              <div className="text-sm text-white/70">Knowledge Base Documents</div>
+              <div className="space-y-2">
+                <label className="block text-sm text-white/70">Upload Documents (Optional)</label>
+                <input
+                  type="file"
+                  multiple
+                  accept=".pdf,.txt,.md,.docx,.doc"
+                  onChange={(e) => setAgentData({ ...agentData, ragDocuments: Array.from(e.target.files || []) })}
+                  className="w-full px-3 py-2 rounded-lg bg-black/30 border border-white/20 text-white file:mr-4 file:py-1 file:px-3 file:rounded file:border-0 file:bg-emerald-500 file:text-black file:font-semibold"
+                />
+                <div className="text-xs text-white/50">
+                  Supported formats: PDF, TXT, Markdown, Word documents<br/>
+                  You can add more documents later even when installed as PWA
+                </div>
+                {agentData.ragDocuments.length > 0 && (
+                  <div className="mt-2">
+                    <div className="text-xs text-white/70 mb-1">Selected documents:</div>
+                    <div className="space-y-1">
+                      {agentData.ragDocuments.map((file, index) => (
+                        <div key={index} className="text-xs text-white/60 flex items-center justify-between bg-black/20 px-2 py-1 rounded">
+                          <span>{file.name}</span>
+                          <button
+                            onClick={() => setAgentData({
+                              ...agentData,
+                              ragDocuments: agentData.ragDocuments.filter((_, i) => i !== index)
+                            })}
+                            className="text-red-400 hover:text-red-300"
+                          >
+                            ×
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -558,7 +648,7 @@ export default function QuickAgentBuilder({ venueId = "demo-venue", onComplete }
               onClick={openKiosk}
               className="px-4 py-2 rounded-xl bg-emerald-500 text-black font-semibold"
             >
-              Open Kiosk
+{agentData.posTemplate === "rag" ? "Open RAG Agent" : agentData.posTemplate === "flexible-rag" ? "Open Data Assistant" : "Open Kiosk"}
             </button>
             <button
               onClick={() => router.push('/dashboard')}

@@ -7,30 +7,12 @@ import { ReactNode, useEffect, useState } from "react";
 import AppSidebar from "@/components/shell/AppSidebar";
 import { 
   ArrowLeft, 
-  LayoutDashboard, 
-  Bot, 
-  Rocket, 
-  BarChart3, 
-  Shield, 
-  FileText, 
-  Search, 
-  Settings, 
-  Zap, 
-  Activity 
+  LayoutDashboard
 } from "lucide-react";
 import { NeuroButton } from "@/components/ui/NeuroButton";
 
 const nav: { href: Route; label: string; icon: React.ReactNode }[] = [
   { href: "/dashboard", label: "Dashboard", icon: <LayoutDashboard size={16} /> },
-  { href: "/dashboard/agent-builder", label: "Agent Builder", icon: <Bot size={16} /> },
-  { href: "/dashboard/publish", label: "Publish", icon: <Rocket size={16} /> },
-  { href: "/dashboard/analytics", label: "Analytics", icon: <BarChart3 size={16} /> },
-  { href: "/dashboard/permissions", label: "Permissions", icon: <Shield size={16} /> },
-  { href: "/dashboard/audit", label: "Audit", icon: <FileText size={16} /> },
-  { href: "/dashboard/inspector", label: "Inspector", icon: <Search size={16} /> },
-  { href: "/dashboard/settings", label: "Settings", icon: <Settings size={16} /> },
-  { href: "/dashboard/latency-lab", label: "Latency Lab", icon: <Zap size={16} /> },
-  { href: "/dashboard/diagnostics", label: "Diagnostics", icon: <Activity size={16} /> },
 ];
 
 export default function DashboardShell({ children }: { children: ReactNode }) {
