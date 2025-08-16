@@ -1,30 +1,49 @@
-# Node
+# Dependencies
 node_modules/
-.next/
-dist/
-build/
+.pnp
+.pnp.js
+
+# Testing
 coverage/
 
-# Python
-.venv/
-venv/
-__pycache__/
-*.py[cod]
-.pytest_cache/
-.ruff_cache/
+# Next.js
+.next/
+out/
+build/
 
-# OS/Editor
+# Production
+dist/
+
+# Misc
 .DS_Store
-*.log
-.idea/
-.vscode/*.log
+*.pem
 
-# Env
+# Debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Local env files
 .env
-apps/**/.env
-apps/**/.env.local
-.env.local
+.env*.local
 
-# Generated
-packages/shared/dist/
+# Vercel
+.vercel
 
+# Typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Convex
+.convex/
+convex/_generated/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+Thumbs.db

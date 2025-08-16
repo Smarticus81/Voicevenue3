@@ -1,0 +1,13 @@
+@echo off
+echo Starting BevPro Studio Development Server...
+echo.
+cd /d "%~dp0"
+echo Installing dependencies...
+call pnpm install
+echo.
+echo Starting Convex backend...
+start cmd /k "pnpm convex dev"
+echo.
+echo Starting Next.js frontend...
+call pnpm dev
+pause
