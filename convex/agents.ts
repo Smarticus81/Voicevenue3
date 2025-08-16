@@ -139,12 +139,14 @@ export const getAgent = query({
     const agent = await ctx.db.get(args.agentId);
     if (!agent) return null;
 
-    // Ensure agent has default WebRTC configuration
-    if (!agent.voicePipeline) {
-      agent.voicePipeline = DEFAULT_VOICE_PIPELINE_CONFIG;
-    }
-
-    return agent;
+    // Ensure agent has default WebRTC configuration and migrate if needed
+    return {
+      ...agent,
+      voicePipeline: agent.voicePipeline || DEFAULT_VOICE_PIPELINE_CONFIG,
+      isActive: agent.isActive !== undefined ? agent.isActive : (agent.status === 'active' || agent.status === 'draft'),
+      createdAt: agent.createdAt || (agent.lastModified ? new Date(agent.lastModified).toISOString() : new Date().toISOString()),
+      updatedAt: agent.updatedAt || (agent.lastModified ? new Date(agent.lastModified).toISOString() : new Date().toISOString()),
+    };
   },
 });
 
@@ -156,10 +158,13 @@ export const getUserAgents = query({
       .withIndex("by_user", (q) => q.eq("userId", args.userId))
       .collect();
 
-    // Ensure all agents have default WebRTC configuration
+    // Ensure all agents have default WebRTC configuration and migrate if needed
     return agents.map(agent => ({
       ...agent,
       voicePipeline: agent.voicePipeline || DEFAULT_VOICE_PIPELINE_CONFIG,
+      isActive: agent.isActive !== undefined ? agent.isActive : (agent.status === 'active' || agent.status === 'draft'),
+      createdAt: agent.createdAt || (agent.lastModified ? new Date(agent.lastModified).toISOString() : new Date().toISOString()),
+      updatedAt: agent.updatedAt || (agent.lastModified ? new Date(agent.lastModified).toISOString() : new Date().toISOString()),
     }));
   },
 });
@@ -174,6 +179,61 @@ export const deleteAgent = mutation({
 
     await ctx.db.delete(args.agentId);
     return { success: true };
+  },
+});
+
+// Migrate existing agents to new schema
+export const migrateExistingAgents = mutation({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    // Get all agents that need migration
+    const agents = await ctx.db.query("agents").collect();
+    let migratedCount = 0;
+
+    for (const agent of agents) {
+      const updates: any = {};
+
+      // Add missing required fields
+      if (!agent.createdAt) {
+        updates.createdAt = agent.lastModified 
+          ? new Date(agent.lastModified).toISOString() 
+          : new Date().toISOString();
+      }
+      
+      if (!agent.updatedAt) {
+        updates.updatedAt = agent.lastModified 
+          ? new Date(agent.lastModified).toISOString() 
+          : new Date().toISOString();
+      }
+
+      // Add WebRTC pipeline configuration if missing
+      if (!agent.voicePipeline) {
+        updates.voicePipeline = DEFAULT_VOICE_PIPELINE_CONFIG;
+      }
+
+      // Add deployment settings if missing
+      if (!agent.deploymentSettings) {
+        updates.deploymentSettings = DEFAULT_AGENT_CONFIG.deploymentSettings;
+      }
+
+      // Set isActive based on status
+      if (agent.isActive === undefined) {
+        updates.isActive = agent.status === 'active' || agent.status === 'draft';
+      }
+
+      // Update agent if there are changes
+      if (Object.keys(updates).length > 0) {
+        await ctx.db.patch(agent._id, updates);
+        migratedCount++;
+      }
+    }
+
+    return { success: true, migratedCount };
   },
 });
 

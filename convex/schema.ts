@@ -10,13 +10,21 @@ export default defineSchema({
     customInstructions: v.string(),
     context: v.string(),
     voiceConfig: v.any(), // Voice configuration including voice type, temperature, etc.
-    voicePipeline: v.any(), // WebRTC pipeline configuration
+    voicePipeline: v.optional(v.any()), // WebRTC pipeline configuration (optional for existing agents)
     toolPermissions: v.any(), // Tool permissions and capabilities
-    deploymentSettings: v.any(), // Deployment and PWA settings
+    deploymentSettings: v.optional(v.any()), // Deployment and PWA settings (optional for existing agents)
     tags: v.array(v.string()),
-    isActive: v.boolean(),
-    createdAt: v.string(),
-    updatedAt: v.string(),
+    isActive: v.optional(v.boolean()), // Optional for existing agents
+    createdAt: v.optional(v.string()), // Optional for existing agents
+    updatedAt: v.optional(v.string()), // Optional for existing agents
+    // Legacy fields for existing agents
+    status: v.optional(v.string()),
+    systemInstructions: v.optional(v.string()),
+    enabledTools: v.optional(v.array(v.string())),
+    version: v.optional(v.string()),
+    lastModified: v.optional(v.number()),
+    createdBy: v.optional(v.string()),
+    stats: v.optional(v.any()),
   })
     .index("by_user", ["userId"])
     .index("by_type", ["type"])
