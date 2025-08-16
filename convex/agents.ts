@@ -1,7 +1,7 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
-import { WEBRTC_PIPELINE_CONFIG } from "./pipeline-types";
+import { WEBRTC_PIPELINE_CONFIG } from "./pipeline_types";
 
 // Default WebRTC Voice Pipeline Configuration
 export const DEFAULT_VOICE_PIPELINE_CONFIG = WEBRTC_PIPELINE_CONFIG;
