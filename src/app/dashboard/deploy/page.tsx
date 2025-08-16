@@ -87,7 +87,7 @@ export default function DeployPage() {
               <li>1. Copy the embed code above</li>
               <li>2. Paste it just before the closing &lt;/body&gt; tag on your website</li>
               <li>3. The voice agent will appear as a floating button on your site</li>
-              <li>4. Users can click the button or say "{agent.wakeWord}" to activate</li>
+              <li>4. Users can click the button or say "Hey Assistant" to activate</li>
             </ol>
           </div>
         </div>
@@ -101,17 +101,17 @@ export default function DeployPage() {
                 <dd className="font-mono">{agent.deploymentId}</dd>
               </div>
               <div>
-                <dt className="font-medium text-gray-600">Voice</dt>
-                <dd className="capitalize">{agent.voice}</dd>
+                <dt className="text-sm font-medium text-gray-500">Voice</dt>
+                <dd className="capitalize">Alloy</dd>
               </div>
               <div>
-                <dt className="font-medium text-gray-600">Wake Word</dt>
-                <dd>{agent.wakeWord}</dd>
+                <dt className="text-sm font-medium text-gray-500">Wake Word</dt>
+                <dd>Hey Assistant</dd>
               </div>
               <div>
-                <dt className="font-medium text-gray-600">Status</dt>
-                <dd className={agent.isActive ? "text-green-600" : "text-gray-600"}>
-                  {agent.isActive ? "Active" : "Inactive"}
+                <dt className="text-sm font-medium text-gray-500">Status</dt>
+                <dd className="text-green-600">
+                  Active
                 </dd>
               </div>
             </dl>

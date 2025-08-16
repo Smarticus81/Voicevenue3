@@ -1,5 +1,6 @@
-import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { mutation, query } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 
 // Create a new deployment
 export const createDeployment = mutation({
@@ -7,96 +8,57 @@ export const createDeployment = mutation({
     agentId: v.id("agents"),
     userId: v.string(),
     name: v.string(),
-    environment: v.union(v.literal("development"), v.literal("staging"), v.literal("production")),
-    description: v.optional(v.string()),
-    tags: v.optional(v.array(v.string())),
-    config: v.object({
-      embedCode: v.string(),
-      webhookUrl: v.optional(v.string()),
-      apiKey: v.optional(v.string()),
-      customDomain: v.optional(v.string()),
-    }),
-    accessControl: v.object({
-      allowedUsers: v.optional(v.array(v.string())),
-      allowedRoles: v.optional(v.array(v.string())),
-      ipWhitelist: v.optional(v.array(v.string())),
-      timeRestrictions: v.optional(v.object({
-        startTime: v.optional(v.string()),
-        endTime: v.optional(v.string()),
-        timezone: v.optional(v.string()),
-        daysOfWeek: v.optional(v.array(v.number())),
-      })),
-    }),
-    monitoring: v.object({
-      isEnabled: v.boolean(),
-      logLevel: v.union(v.literal("error"), v.literal("warn"), v.literal("info"), v.literal("debug")),
-      alertThresholds: v.optional(v.object({
-        errorRate: v.optional(v.number()),
-        responseTime: v.optional(v.number()),
-        concurrentUsers: v.optional(v.number()),
-      })),
-    }),
+    deploymentType: v.union(v.literal("pwa"), v.literal("web"), v.literal("api")),
+    url: v.optional(v.string()),
+    settings: v.optional(v.any()),
   },
   handler: async (ctx, args) => {
-    const now = Date.now();
-    
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
     const deployment = {
       agentId: args.agentId,
       userId: args.userId,
       name: args.name,
-      environment: args.environment,
       status: "active" as const,
-      
-      // Configuration
-      config: args.config,
-      accessControl: args.accessControl,
-      monitoring: args.monitoring,
-      
-      // Metadata
-      description: args.description || `${args.name} deployment`,
-      tags: args.tags || [args.environment],
-      version: "1.0.0",
-      deployedAt: now,
-      lastModified: now,
-      
-      // Statistics
-      stats: {
-        totalSessions: 0,
-        activeSessions: 0,
-        totalInteractions: 0,
-        averageResponseTime: undefined,
-        errorCount: 0,
-        lastActivity: undefined,
-      },
+      deploymentType: args.deploymentType,
+      url: args.url,
+      settings: args.settings || {},
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
     };
 
     const deploymentId = await ctx.db.insert("deployments", deployment);
-    
-    // Update agent stats
-    const agent = await ctx.db.get(args.agentId);
-    if (agent && 'stats' in agent) {
-      const agentStats = agent.stats as any;
-      await ctx.db.patch(args.agentId, {
-        stats: {
-          ...agentStats,
-          totalDeployments: (agentStats?.totalDeployments || 0) + 1,
-        },
-        lastModified: now,
-      });
-    }
 
-    return { deploymentId, deployment };
+    // Update agent with deployment info
+    await ctx.db.patch(args.agentId, {
+      updatedAt: new Date().toISOString(),
+    });
+
+    return deploymentId;
   },
 });
 
-// Get deployments for an agent
+// Get all deployments for a user
+export const getUserDeployments = query({
+  args: { userId: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("deployments")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+  },
+});
+
+// Get deployments for a specific agent
 export const getAgentDeployments = query({
   args: { agentId: v.id("agents") },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("deployments")
       .withIndex("by_agent", (q) => q.eq("agentId", args.agentId))
-      .order("desc")
       .collect();
   },
 });
@@ -113,17 +75,17 @@ export const getDeployment = query({
 export const updateDeploymentStatus = mutation({
   args: {
     deploymentId: v.id("deployments"),
-    status: v.union(v.literal("active"), v.literal("paused"), v.literal("maintenance")),
+    status: v.union(v.literal("active"), v.literal("paused"), v.literal("stopped")),
   },
   handler: async (ctx, args) => {
-    const deployment = await ctx.db.get(args.deploymentId);
-    if (!deployment) {
-      throw new Error("Deployment not found");
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
     }
 
     await ctx.db.patch(args.deploymentId, {
       status: args.status,
-      lastModified: Date.now(),
+      updatedAt: new Date().toISOString(),
     });
 
     return { success: true, status: args.status };
@@ -136,95 +98,35 @@ export const updateDeployment = mutation({
     deploymentId: v.id("deployments"),
     updates: v.object({
       name: v.optional(v.string()),
-      description: v.optional(v.string()),
-      config: v.optional(v.object({
-        embedCode: v.string(),
-        webhookUrl: v.optional(v.string()),
-        apiKey: v.optional(v.string()),
-        customDomain: v.optional(v.string()),
-      })),
-      accessControl: v.optional(v.object({
-        allowedUsers: v.optional(v.array(v.string())),
-        allowedRoles: v.optional(v.array(v.string())),
-        ipWhitelist: v.optional(v.array(v.string())),
-        timeRestrictions: v.optional(v.object({
-          startTime: v.optional(v.string()),
-          endTime: v.optional(v.string()),
-          timezone: v.optional(v.string()),
-          daysOfWeek: v.optional(v.array(v.number())),
-        })),
-      })),
-      monitoring: v.optional(v.object({
-        isEnabled: v.boolean(),
-        logLevel: v.union(v.literal("error"), v.literal("warn"), v.literal("info"), v.literal("debug")),
-        alertThresholds: v.optional(v.object({
-          errorRate: v.optional(v.number()),
-          responseTime: v.optional(v.number()),
-          concurrentUsers: v.optional(v.number()),
-        })),
-      })),
-      tags: v.optional(v.array(v.string())),
+      url: v.optional(v.string()),
+      settings: v.optional(v.any()),
     }),
   },
   handler: async (ctx, args) => {
-    const deployment = await ctx.db.get(args.deploymentId);
-    if (!deployment) {
-      throw new Error("Deployment not found");
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
     }
 
-    const updatedDeployment = {
-      ...deployment,
+    await ctx.db.patch(args.deploymentId, {
       ...args.updates,
-      lastModified: Date.now(),
-    };
+      updatedAt: new Date().toISOString(),
+    });
 
-    await ctx.db.patch(args.deploymentId, updatedDeployment);
-    return updatedDeployment;
+    return { success: true };
   },
 });
 
 // Delete deployment
 export const deleteDeployment = mutation({
-  args: {
-    deploymentId: v.id("deployments"),
-    userId: v.string(), // For authorization
-  },
+  args: { deploymentId: v.id("deployments") },
   handler: async (ctx, args) => {
-    const deployment = await ctx.db.get(args.deploymentId);
-    if (!deployment) {
-      throw new Error("Deployment not found");
-    }
-
-    if (deployment.userId !== args.userId) {
-      throw new Error("Unauthorized to delete this deployment");
-    }
-
-    // Check if deployment has active sessions
-    const activeSessions = await ctx.db
-      .query("voiceSessions")
-      .withIndex("by_deployment", (q) => q.eq("deploymentId", args.deploymentId))
-      .filter((q) => q.eq(q.field("status"), "active"))
-      .collect();
-
-    if (activeSessions.length > 0) {
-      throw new Error("Cannot delete deployment with active sessions. Please end all sessions first.");
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
     }
 
     await ctx.db.delete(args.deploymentId);
-    
-    // Update agent stats
-    const agent = await ctx.db.get(deployment.agentId as any);
-    if (agent && 'stats' in agent) {
-      const agentStats = agent.stats as any;
-      await ctx.db.patch(deployment.agentId as any, {
-        stats: {
-          ...agentStats,
-          totalDeployments: Math.max(0, (agentStats?.totalDeployments || 0) - 1),
-        },
-        lastModified: Date.now(),
-      });
-    }
-
     return { success: true };
   },
 });
@@ -238,27 +140,24 @@ export const getDeploymentStats = query({
       throw new Error("Deployment not found");
     }
 
-    // Get session stats
+    // Get voice sessions for this deployment
     const sessions = await ctx.db
       .query("voiceSessions")
-      .withIndex("by_deployment", (q) => q.eq("deploymentId", args.deploymentId))
+      .withIndex("by_agent", (q) => q.eq("agentId", deployment.agentId))
       .collect();
 
-    // Get command stats
+    // Get voice commands for this deployment
     const commands = await ctx.db
       .query("voiceCommands")
-      .withIndex("by_deployment", (q) => q.eq("deploymentId", args.deploymentId))
+      .withIndex("by_agent", (q) => q.eq("agentId", deployment.agentId))
       .collect();
 
-    // Calculate totals
+    // Calculate statistics
     const totalSessions = sessions.length;
     const activeSessions = sessions.filter(s => s.status === "active").length;
     const totalCommands = commands.length;
-    const successfulCommands = commands.filter(c => c.status === "completed").length;
-    const failedCommands = commands.filter(c => c.status === "failed").length;
-    const averageResponseTime = commands.length > 0 
-      ? commands.reduce((sum, cmd) => sum + (cmd.processingTime || 0), 0) / commands.length
-      : undefined;
+    const successfulCommands = commands.filter(c => c.success).length;
+    const failedCommands = commands.filter(c => !c.success).length;
 
     return {
       deployment: deployment,
@@ -268,35 +167,9 @@ export const getDeploymentStats = query({
         totalCommands,
         successfulCommands,
         failedCommands,
-        averageResponseTime,
-        errorCount: failedCommands,
-        lastActivity: deployment.stats?.lastActivity,
+        successRate: totalCommands > 0 ? (successfulCommands / totalCommands) * 100 : 0,
+        lastActivity: deployment.updatedAt,
       },
     };
-  },
-});
-
-// Get deployments by user
-export const getUserDeployments = query({
-  args: { userId: v.string() },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("deployments")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
-      .order("desc")
-      .collect();
-  },
-});
-
-// Get active deployments
-export const getActiveDeployments = query({
-  args: { userId: v.string() },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("deployments")
-      .withIndex("by_user", (q) => q.eq("userId", args.userId))
-      .filter((q) => q.eq(q.field("status"), "active"))
-      .order("desc")
-      .collect();
   },
 });

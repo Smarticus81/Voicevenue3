@@ -5,9 +5,11 @@ import Link from "next/link";
 import DashboardLayout from "@/components/dashboard-layout";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { useRouter } from "next/navigation";
 
 export default function DashboardPage() {
   const { user } = useUser();
+  const router = useRouter();
 
   // Get real data from Convex
   const agents = useQuery(api.agents.getUserAgents, user?.id ? { userId: user.id } : "skip");
@@ -15,10 +17,10 @@ export default function DashboardPage() {
 
   // Calculate stats from real data
   const stats = {
-    agentCount: agents?.length || 0,
-    activeAgents: agents?.filter(a => a.status === 'active').length || 0,
+    totalAgents: agents?.length || 0,
+    activeAgents: agents?.filter(a => a.isActive).length || 0,
     totalDeployments: deployments?.length || 0,
-    averageRating: "4.8", // This will come from analytics later
+    activeDeployments: deployments?.filter(d => d.status === 'active').length || 0,
   };
 
   return (
@@ -37,7 +39,7 @@ export default function DashboardPage() {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-sm font-medium text-gray-500">Total Agents</h3>
           <p className="mt-1 text-3xl font-semibold text-gray-900">
-            {stats.agentCount}
+            {stats.totalAgents}
           </p>
         </div>
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -55,7 +57,7 @@ export default function DashboardPage() {
         <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
           <h3 className="text-sm font-medium text-gray-500">Average Rating</h3>
           <p className="mt-1 text-3xl font-semibold text-gray-900">
-            {stats.averageRating}
+            4.8
           </p>
         </div>
       </div>
@@ -75,50 +77,49 @@ export default function DashboardPage() {
 
           {agents && agents.length > 0 ? (
             <div className="grid md:grid-cols-3 gap-6">
-              {agents.map((agent) => (
-                <div key={agent._id} className="border border-gray-200 rounded-lg p-6 hover:shadow-md transition-shadow">
-                  <div className="flex justify-between items-start mb-4">
+              {agents?.map((agent) => (
+                <div
+                  key={agent._id}
+                  className={`p-6 rounded-lg border ${
+                    agent.isActive
+                      ? 'border-green-200 bg-green-50'
+                      : 'border-gray-200 bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-800">{agent.name}</h3>
-                      <span className={`inline-block px-2 py-1 text-xs rounded-full ${
-                        agent.type === 'Bevpro'
-                          ? 'bg-purple-100 text-purple-800'
-                          : 'bg-blue-100 text-blue-800'
-                      }`}>
-                        {agent.type}
-                      </span>
+                      <h3 className="text-lg font-semibold text-gray-900">
+                        {agent.name}
+                      </h3>
+                      <p className="text-sm text-gray-600">{agent.type}</p>
                     </div>
-                    <span className={`px-2 py-1 text-xs rounded-full ${
-                      agent.status === 'active'
-                        ? 'bg-green-100 text-green-800'
-                        : agent.status === 'draft'
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-gray-100 text-gray-800'
-                    }`}>
-                      {agent.status}
+                    <span
+                      className={`px-3 py-1 text-xs font-medium rounded-full ${
+                        agent.isActive
+                          ? 'bg-green-100 text-green-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}
+                    >
+                      {agent.isActive ? "Active" : "Inactive"}
                     </span>
                   </div>
-
-                  <div className="space-y-2 text-sm text-gray-600 mb-4">
-                    <p>Type: {agent.type}</p>
-                    <p>Status: {agent.status}</p>
-                    {agent.description && <p>Description: {agent.description}</p>}
-                    <p>Created: {new Date(agent.lastModified).toLocaleDateString()}</p>
+                  <div className="mt-4 space-y-2">
+                    <p>Description: {agent.description}</p>
+                    <p>Created: {new Date(agent.createdAt).toLocaleDateString()}</p>
                   </div>
-
-                  <div className="flex gap-2">
-                    <Link
-                      href={`/dashboard/agent-designer?edit=${agent._id}`}
-                      className="px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+                  <div className="mt-4 flex space-x-2">
+                    <button
+                      onClick={() => router.push(`/dashboard/agent-designer?edit=${agent._id}`)}
+                      className="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
                     >
                       Edit
-                    </Link>
-                    <Link
-                      href={`/dashboard/deploy?agentId=${agent._id}`}
-                      className="px-3 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors"
+                    </button>
+                    <button
+                      onClick={() => router.push(`/dashboard/deploy?agent=${agent._id}`)}
+                      className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
                     >
                       Deploy
-                    </Link>
+                    </button>
                   </div>
                 </div>
               ))}

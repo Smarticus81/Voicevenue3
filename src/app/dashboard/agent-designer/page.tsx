@@ -118,6 +118,10 @@ export default function AgentDesignerPage() {
     interrupt
   } = useRealtimeVoice();
 
+  // Get voice options from Convex
+  const voiceOptions = useQuery(api.agents.getVoiceOptions);
+  const defaultVoicePipeline = useQuery(api.agents.getDefaultVoicePipeline);
+
   // Convex mutations
   const createAgent = useMutation(api.agents.createAgent);
   const updateAgent = useMutation(api.agents.updateAgent);
@@ -141,6 +145,17 @@ export default function AgentDesignerPage() {
       setTags(agent.tags || []);
     }
   }, [editAgentId, getAgent]);
+
+  // Initialize voice config with defaults
+  useEffect(() => {
+    if (defaultVoicePipeline && !voiceConfig.voice) {
+      setVoiceConfig(prev => ({
+        ...prev,
+        voice: defaultVoicePipeline.metadata.defaultVoice as "alloy" | "echo" | "fable" | "onyx" | "nova" | "shimmer",
+        temperature: defaultVoicePipeline.metadata.defaultTemperature,
+      }));
+    }
+  }, [defaultVoicePipeline, voiceConfig.voice]);
 
   // Update voice config when agent name changes
   useEffect(() => {
@@ -439,8 +454,8 @@ export default function AgentDesignerPage() {
             </label>
           </div>
         </div>
-
-        <div>
+              
+              <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Description
           </label>
@@ -450,14 +465,14 @@ export default function AgentDesignerPage() {
             placeholder="Describe what this agent will do..."
             rows={3}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-        </div>
+                />
+              </div>
 
-        <div>
+              <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Venue Context
           </label>
-          <textarea
+                <textarea
             value={context}
             onChange={(e) => setContext(e.target.value)}
             placeholder="Describe your venue, business type, and specific needs..."
@@ -490,33 +505,37 @@ export default function AgentDesignerPage() {
             onChange={(e) => setVoiceConfig(prev => ({ ...prev, agentName: e.target.value }))}
             placeholder="What should the agent call itself?"
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            required
-          />
-        </div>
+                  required
+                />
+              </div>
 
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            Voice Style
+            Voice Type
           </label>
           <select
             value={voiceConfig.voice}
             onChange={(e) => setVoiceConfig(prev => ({ ...prev, voice: e.target.value as any }))}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            required
           >
-            <option value="alloy">Alloy - Balanced and clear</option>
-            <option value="echo">Echo - Warm and friendly</option>
-            <option value="fable">Fable - Storytelling and engaging</option>
-            <option value="onyx">Onyx - Professional and authoritative</option>
-            <option value="nova">Nova - Energetic and enthusiastic</option>
-            <option value="shimmer">Shimmer - Soft and gentle</option>
+            {voiceOptions ? (
+              Object.entries(voiceOptions).map(([key, voice]) => (
+                <option key={key} value={key}>
+                  {voice.name} - {voice.description}
+                </option>
+              ))
+            ) : (
+              <option value="alloy">Alloy - Balanced and natural</option>
+            )}
           </select>
         </div>
 
-        <div>
+                <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Response Style
           </label>
-          <select
+                  <select
             value={voiceConfig.responseStyle}
             onChange={(e) => setVoiceConfig(prev => ({ ...prev, responseStyle: e.target.value as any }))}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -524,10 +543,10 @@ export default function AgentDesignerPage() {
             <option value="professional">Professional - Formal and business-like</option>
             <option value="friendly">Friendly - Warm and approachable</option>
             <option value="casual">Casual - Relaxed and conversational</option>
-          </select>
-        </div>
+                  </select>
+                </div>
 
-        <div>
+                <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Temperature (Creativity) - {voiceConfig.temperature}
           </label>
@@ -551,11 +570,11 @@ export default function AgentDesignerPage() {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Confidence Threshold - {voiceConfig.confidenceThreshold}
           </label>
-          <input
+                  <input
             type="range"
-            min="0"
-            max="1"
-            step="0.1"
+                    min="0"
+                    max="1"
+                    step="0.1"
             value={voiceConfig.confidenceThreshold}
             onChange={(e) => setVoiceConfig(prev => ({ ...prev, confidenceThreshold: parseFloat(e.target.value) }))}
             className="w-full"
@@ -672,9 +691,9 @@ export default function AgentDesignerPage() {
           <p className="text-xs text-gray-500 mt-1">
             These instructions will be combined with the default system instructions for your agent type.
           </p>
-        </div>
+                </div>
 
-        <div>
+                <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Tags
           </label>
@@ -1090,9 +1109,9 @@ export default function AgentDesignerPage() {
                 />
                 View analytics
               </label>
+              </div>
             </div>
           </div>
-        </div>
 
         <div>
           <h4 className="text-md font-medium text-gray-800 mb-3">Deployment Settings</h4>
@@ -1108,8 +1127,8 @@ export default function AgentDesignerPage() {
                 Public access (no authentication required)
               </label>
               <label className="flex items-center">
-                <input
-                  type="checkbox"
+                    <input
+                      type="checkbox"
                   checked={deploymentSettings.requiresAuthentication}
                   onChange={(e) => setDeploymentSettings(prev => ({ ...prev, requiresAuthentication: e.target.checked }))}
                   className="mr-2"
@@ -1121,7 +1140,7 @@ export default function AgentDesignerPage() {
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Max Concurrent Sessions
-              </label>
+                  </label>
               <input
                 type="number"
                 value={deploymentSettings.maxConcurrentSessions}
@@ -1221,9 +1240,9 @@ export default function AgentDesignerPage() {
                 <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">
                   {tag}
                 </span>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
         )}
       </div>
     </div>
@@ -1334,7 +1353,7 @@ export default function AgentDesignerPage() {
               {error}
             </div>
           )}
-        </div>
+          </div>
       </div>
     </DashboardLayout>
   );
