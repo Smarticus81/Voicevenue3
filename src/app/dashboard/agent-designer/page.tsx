@@ -8,6 +8,8 @@ import { useMutation, useQuery } from 'convex/react';
 import { api } from '../../../../convex/_generated/api';
 import { getIntentsForAgentType, recognizeIntent } from '@/lib/agent-intents';
 import { useRealtimeVoice } from '@/hooks/useRealtimeVoice';
+import { UIGenerationStep } from '../../../components/ui-generation-step';
+import { GeneratedUI } from '../../../lib/v0-client';
 
 interface VoiceConfig {
   agentName: string;
@@ -117,6 +119,10 @@ export default function AgentDesignerPage() {
     sendMessage,
     interrupt
   } = useRealtimeVoice();
+
+  // Add UI generation state
+  const [generatedUI, setGeneratedUI] = useState<GeneratedUI | null>(null);
+  const [uiCustomization, setUICustomization] = useState<any>(null);
 
   // Get voice options from Convex
   const voiceOptions = useQuery(api.agents.getVoiceOptions);
@@ -667,30 +673,34 @@ export default function AgentDesignerPage() {
   );
 
   // Render step 3: Custom Instructions
-  const renderStep3 = () => (
-    <div className="space-y-6">
-      <div>
-        <h3 className="text-lg font-medium text-gray-900 mb-2">Custom Instructions</h3>
-        <p className="text-gray-600">
-          Add specific instructions and behaviors for your agent.
-        </p>
-      </div>
+  const renderStep3 = () => {
+    const intents = getIntentsForAgentType(agentType);
+    const recognizedIntent = testMessage ? recognizeIntent(testMessage, intents, agentType) : null;
 
-      <div className="space-y-4">
+    return (
+      <div className="space-y-6">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            Additional Instructions
-          </label>
-          <textarea
-            value={customInstructions}
-            onChange={(e) => setCustomInstructions(e.target.value)}
-            placeholder="Add any specific instructions, behaviors, or personality traits for your agent..."
-            rows={6}
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <p className="text-xs text-gray-500 mt-1">
-            These instructions will be combined with the default system instructions for your agent type.
+          <h3 className="text-lg font-medium text-gray-900 mb-2">Custom Instructions</h3>
+          <p className="text-gray-600">
+            Add specific instructions and behaviors for your agent.
           </p>
+        </div>
+
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Additional Instructions
+            </label>
+            <textarea
+              value={customInstructions}
+              onChange={(e) => setCustomInstructions(e.target.value)}
+              placeholder="Add any specific instructions, behaviors, or personality traits for your agent..."
+              rows={6}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <p className="text-xs text-gray-500 mt-1">
+              These instructions will be combined with the default system instructions for your agent type.
+            </p>
                 </div>
 
                 <div>
@@ -948,7 +958,7 @@ export default function AgentDesignerPage() {
                 <div className="bg-white rounded-lg shadow-lg p-6 mt-6">
                   <h4 className="font-medium text-gray-900 mb-3">Available Intents for {agentType}:</h4>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {intents.intents.map((intent, index) => (
+                    {intents.intents.map((intent: any, index: number) => (
                       <div key={index} className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                         <h5 className="font-medium text-blue-900 mb-1">{intent.intent}</h5>
                         <p className="text-sm text-blue-800">
@@ -1248,14 +1258,19 @@ export default function AgentDesignerPage() {
     </div>
   );
 
+  // Add UI generation step
   const steps = [
-    { title: 'Basic Info', component: renderStep1 },
-    { title: 'Voice Config', component: renderStep2 },
-    { title: 'Instructions', component: renderStep3 },
-    { title: 'Test Agent', component: renderStep4 },
-    { title: 'Permissions', component: renderStep5 },
-    { title: 'Review', component: renderStep6 }
+    { id: 1, name: 'Basic Info', description: 'Agent name and type', component: renderStep1 },
+    { id: 2, name: 'Voice Config', description: 'Voice settings and customization', component: renderStep2 },
+    { id: 3, name: 'Voice Testing', description: 'Test the voice pipeline', component: renderStep3 },
+    { id: 4, name: 'Generate UI', description: 'Create custom interface', component: renderStep4 },
+    { id: 5, name: 'Deploy', description: 'Deploy your agent', component: renderStep5 },
   ];
+
+  const renderStep = () => {
+    const currentStep = steps[step - 1];
+    return currentStep.component();
+  };
 
   return (
     <DashboardLayout>
@@ -1273,7 +1288,7 @@ export default function AgentDesignerPage() {
         <div className="mb-8">
           <div className="flex items-center justify-between">
             {steps.map((stepItem, index) => (
-              <div key={index} className="flex items-center">
+              <div key={stepItem.id} className="flex items-center">
                 <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
                   index + 1 < step
                     ? 'bg-green-500 text-white'
@@ -1286,7 +1301,7 @@ export default function AgentDesignerPage() {
                 <span className={`ml-2 text-sm font-medium ${
                   index + 1 === step ? 'text-blue-600' : 'text-gray-500'
                 }`}>
-                  {stepItem.title}
+                  {stepItem.name}
                 </span>
                 {index < steps.length - 1 && (
                   <div className={`w-16 h-0.5 mx-4 ${
@@ -1300,7 +1315,7 @@ export default function AgentDesignerPage() {
 
         {/* Step Content */}
         <div className="bg-white rounded-lg shadow-lg p-8">
-          {steps[step - 1].component()}
+          {renderStep()}
 
           {/* Navigation */}
           <div className="flex justify-between mt-8 pt-6 border-t border-gray-200">
@@ -1353,7 +1368,7 @@ export default function AgentDesignerPage() {
               {error}
             </div>
           )}
-          </div>
+        </div>
       </div>
     </DashboardLayout>
   );

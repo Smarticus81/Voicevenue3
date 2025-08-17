@@ -17,6 +17,10 @@ export default defineSchema({
     isActive: v.optional(v.boolean()), // Optional for existing agents
     createdAt: v.optional(v.string()), // Optional for existing agents
     updatedAt: v.optional(v.string()), // Optional for existing agents
+    // UI Generation and PWA
+    generatedUI: v.optional(v.string()), // Generated React component code
+    uiCustomization: v.optional(v.any()), // Branding and layout preferences
+    pwaManifest: v.optional(v.any()), // PWA configuration
     // Legacy fields for existing agents
     status: v.optional(v.string()),
     systemInstructions: v.optional(v.string()),

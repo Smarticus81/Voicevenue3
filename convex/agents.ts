@@ -182,6 +182,104 @@ export const deleteAgent = mutation({
   },
 });
 
+// Save generated UI for an agent
+export const saveGeneratedUI = mutation({
+  args: {
+    agentId: v.id("agents"),
+    generatedUI: v.string(),
+    uiCustomization: v.optional(v.any()),
+    pwaManifest: v.optional(v.any()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    await ctx.db.patch(args.agentId, {
+      generatedUI: args.generatedUI,
+      uiCustomization: args.uiCustomization,
+      pwaManifest: args.pwaManifest,
+      updatedAt: new Date().toISOString(),
+    });
+
+    return { success: true };
+  },
+});
+
+// Get generated UI for an agent
+export const getAgentUI = query({
+  args: { agentId: v.id("agents") },
+  handler: async (ctx, args) => {
+    const agent = await ctx.db.get(args.agentId);
+    if (!agent) return null;
+
+    return {
+      generatedUI: agent.generatedUI,
+      uiCustomization: agent.uiCustomization,
+      pwaManifest: agent.pwaManifest,
+    };
+  },
+});
+
+// Update UI customization
+export const updateUICustomization = mutation({
+  args: {
+    agentId: v.id("agents"),
+    uiCustomization: v.any(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Not authenticated");
+    }
+
+    await ctx.db.patch(args.agentId, {
+      uiCustomization: args.uiCustomization,
+      updatedAt: new Date().toISOString(),
+    });
+
+    return { success: true };
+  },
+});
+
+// Generate PWA manifest for an agent
+export const generatePWAManifest = query({
+  args: { agentId: v.id("agents") },
+  handler: async (ctx, args) => {
+    const agent = await ctx.db.get(args.agentId);
+    if (!agent) return null;
+
+    const manifest = {
+      name: `${agent.name} - Voice Agent`,
+      short_name: agent.name,
+      description: `${agent.type} voice agent for ${agent.description}`,
+      start_url: '/',
+      display: 'standalone',
+      background_color: '#ffffff',
+      theme_color: agent.uiCustomization?.colors?.primary || '#3b82f6',
+      icons: [
+        {
+          src: agent.uiCustomization?.logo || '/default-icon.png',
+          sizes: '192x192',
+          type: 'image/png'
+        },
+        {
+          src: agent.uiCustomization?.logo || '/default-icon.png',
+          sizes: '512x512',
+          type: 'image/png'
+        }
+      ],
+      categories: ['business', 'productivity'],
+      lang: 'en',
+      scope: '/',
+      orientation: 'portrait-primary',
+    };
+
+    return manifest;
+  },
+});
+
 // Migrate existing agents to new schema
 export const migrateExistingAgents = mutation({
   args: {},
