@@ -40,9 +40,9 @@ export const DEFAULT_AGENT_CONFIG = {
 
 export const createAgent = mutation({
   args: {
-    userId: v.string(),
+    userId: v.string(), // Temporarily require userId as parameter
     name: v.string(),
-    type: v.union(v.literal("Bevpro"), v.literal("Venue Voice")),
+    type: v.union(v.literal("Event Venue"), v.literal("Venue Bar"), v.literal("Venue Voice")),
     description: v.optional(v.string()),
     customInstructions: v.optional(v.string()),
     context: v.optional(v.string()),
@@ -52,9 +52,11 @@ export const createAgent = mutation({
     tags: v.optional(v.array(v.string())),
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) {
-      throw new Error("Not authenticated");
+    // Temporarily use the passed userId instead of authentication
+    // TODO: Once Clerk JWT integration is set up, use ctx.auth.getUserIdentity()
+    const userId = args.userId;
+    if (!userId) {
+      throw new Error("User ID is required");
     }
 
     // Merge with default configuration
@@ -74,7 +76,7 @@ export const createAgent = mutation({
     };
 
     const agentId = await ctx.db.insert("agents", {
-      userId: args.userId,
+      userId: userId,
       name: args.name,
       type: args.type,
       description: args.description || "",
@@ -99,7 +101,7 @@ export const updateAgent = mutation({
     agentId: v.id("agents"),
     updates: v.object({
       name: v.optional(v.string()),
-      type: v.optional(v.union(v.literal("Bevpro"), v.literal("Venue Voice"))),
+      type: v.optional(v.union(v.literal("Event Venue"), v.literal("Venue Bar"))),
       description: v.optional(v.string()),
       customInstructions: v.optional(v.string()),
       context: v.optional(v.string()),
@@ -151,8 +153,14 @@ export const getAgent = query({
 });
 
 export const getUserAgents = query({
-  args: { userId: v.string() },
+  args: { userId: v.string() }, // Temporarily require userId as parameter
   handler: async (ctx, args) => {
+    // Temporarily use the passed userId instead of authentication
+    // TODO: Once Clerk JWT integration is set up, use ctx.auth.getUserIdentity()
+    if (!args.userId) {
+      return [];
+    }
+
     const agents = await ctx.db
       .query("agents")
       .withIndex("by_user", (q) => q.eq("userId", args.userId))

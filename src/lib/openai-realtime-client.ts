@@ -93,48 +93,48 @@ export class OpenAIRealtimeClient extends EventEmitter {
     if (!this.session) return;
 
     // Listen for speech started/stopped events
-    this.session.on('input_audio_buffer.speech_started', () => {
+    this.session.on('input_audio_buffer.speech_started' as any, () => {
       console.log('User started speaking');
       this.listening = true;
       this.emit('speech.started');
     });
 
-    this.session.on('input_audio_buffer.speech_stopped', () => {
+    this.session.on('input_audio_buffer.speech_stopped' as any, () => {
       console.log('User stopped speaking');
       this.listening = false;
       this.emit('speech.stopped');
     });
 
     // Listen for transcript events
-    this.session.on('input_audio_buffer.transcript', (event: any) => {
+    this.session.on('input_audio_buffer.transcript' as any, (event: any) => {
       console.log('Transcript received:', event.text, event.is_final);
       this.emit('transcript', event.text, event.is_final);
     });
 
     // Listen for response events
-    this.session.on('response.output_audio.delta', (event: any) => {
+    this.session.on('response.output_audio.delta' as any, (event: any) => {
       console.log('Audio response delta received');
       this.emit('audio.delta', event);
     });
 
-    this.session.on('response.output_text.delta', (event: any) => {
+    this.session.on('response.output_text.delta' as any, (event: any) => {
       console.log('Text response delta received:', event.delta);
       this.emit('text.delta', event.delta);
     });
 
-    this.session.on('response.completed', () => {
+    this.session.on('response.completed' as any, () => {
       console.log('Response completed');
       this.emit('response.completed');
     });
 
     // Listen for tool call events
-    this.session.on('response.function_call', (event: any) => {
+    this.session.on('response.function_call' as any, (event: any) => {
       console.log('Function call received:', event);
       this.emit('tool.call', event);
     });
 
     // Listen for errors
-    this.session.on('error', (error: any) => {
+    this.session.on('error' as any, (error: any) => {
       console.error('Session error:', error);
       this.emit('error', error);
     });
@@ -183,10 +183,9 @@ export class OpenAIRealtimeClient extends EventEmitter {
       
       // Send text message through the session
       this.session.sendMessage({
-        type: 'message',
-        role: 'user',
-        content: content
-      });
+        type: 'input_text',
+        text: content
+      } as any);
 
       console.log('Message sent successfully');
     } catch (error) {
@@ -206,10 +205,9 @@ export class OpenAIRealtimeClient extends EventEmitter {
       // The WebRTC transport automatically handles voice input
       // Just trigger the response creation
       this.session.sendMessage({
-        type: 'message',
-        role: 'user',
-        content: 'Voice input'
-      });
+        type: 'input_text',
+        text: 'Voice input'
+      } as any);
 
       console.log('Voice message sent successfully');
     } catch (error) {

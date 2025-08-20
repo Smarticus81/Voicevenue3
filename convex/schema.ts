@@ -5,7 +5,7 @@ export default defineSchema({
   agents: defineTable({
     userId: v.string(),
     name: v.string(),
-    type: v.union(v.literal("Bevpro"), v.literal("Venue Voice")),
+    type: v.union(v.literal("Event Venue"), v.literal("Venue Bar"), v.literal("Venue Voice")),
     description: v.string(),
     customInstructions: v.string(),
     context: v.string(),
@@ -128,4 +128,22 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_email", ["email"]),
+
+  knowledgeBases: defineTable({
+    agentId: v.id("agents"),
+    userId: v.string(),
+    name: v.string(),
+    type: v.union(v.literal("faq"), v.literal("venue_info"), v.literal("schedule"), v.literal("inventory"), v.literal("custom")),
+    content: v.string(), // JSON stringified content
+    fileUrl: v.optional(v.string()), // URL to uploaded file
+    fileName: v.optional(v.string()),
+    fileSize: v.optional(v.number()),
+    isActive: v.boolean(),
+    createdAt: v.string(),
+    updatedAt: v.string(),
+  })
+    .index("by_agent", ["agentId"])
+    .index("by_user", ["userId"])
+    .index("by_type", ["type"])
+    .index("by_active", ["isActive"]),
 });

@@ -1,3 +1,6 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;600;700&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -25,6 +28,28 @@
     --ring: 0 0% 0%;
     --radius: 12px;
   }
+
+  .dark {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 0%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 0%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 0 0% 100%;
+    --primary-foreground: 0 0% 0%;
+    --secondary: 0 0% 10%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 10%;
+    --muted-foreground: 0 0% 60%;
+    --accent: 0 0% 10%;
+    --accent-foreground: 0 0% 100%;
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 0 0% 20%;
+    --input: 0 0% 20%;
+    --ring: 0 0% 100%;
+  }
 }
 
 @layer base {
@@ -33,6 +58,169 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+  
+  /* Professional Minimalism Background */
+  .tech-bg {
+    background: #ffffff;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .dark .tech-bg {
+    background: #0a0a0a;
+  }
+  
+  .tech-bg::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    opacity: 0;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translate(0, 0) rotate(0deg); }
+    25% { transform: translate(-10px, -10px) rotate(1deg); }
+    50% { transform: translate(10px, -5px) rotate(-1deg); }
+    75% { transform: translate(-5px, 10px) rotate(1deg); }
+  }
+  
+  /* Glass Morphism Effects */
+  .glass {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    color: #111827;
+  }
+  
+  .glass-dark {
+    background: #1f2937;
+    border: 1px solid #374151;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    color: #f9fafb;
+  }
+  
+  /* Dark mode specific adjustments */
+  .dark .glass {
+    background: #374151;
+    border: 1px solid #4b5563;
+    color: #f9fafb;
+  }
+  
+  .dark .glass-dark {
+    background: #111827;
+    border: 1px solid #374151;
+    color: #f9fafb;
+  }
+  
+  /* Professional Button Styles */
+  .btn-premium {
+    background: #3b82f6;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .btn-premium:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Professional Text */
+  .gradient-text {
+    color: #3b82f6;
+    font-weight: 600;
+  }
+  
+  /* Professional Card Styles */
+  .card-premium {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+    transition: all 0.2s ease-in-out;
+    color: #111827;
+  }
+  
+  .card-premium:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Dark mode card adjustments */
+  .dark .card-premium {
+    background: #1f2937;
+    border: 1px solid #374151;
+    color: #f9fafb;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Ensure all text in premium components is visible in dark mode */
+  .dark .card-premium * {
+    color: inherit;
+  }
+  
+  .dark .glass * {
+    color: white;
+  }
+  
+  .dark .glass-dark * {
+    color: white;
+  }
+  
+  /* Force white text in dark mode for specific elements */
+  .dark .text-white {
+    color: white !important;
+  }
+  
+  .dark .text-gray-300 {
+    color: rgb(209 213 219) !important;
+  }
+  
+  .dark .text-gray-400 {
+    color: rgb(156 163 175) !important;
+  }
+  
+  /* Enhanced Form Styling */
+  .form-container {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 2rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+  
+  .dark .form-container {
+    background: #1f2937;
+    border: 1px solid #374151;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+  
+  /* Enhanced Progress Steps */
+  .progress-container {
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  }
+  
+  .dark .progress-container {
+    background: #1f2937;
+    border: 1px solid #374151;
+  }
+  
+  .dark .card-premium:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    box-shadow: 
+      0 30px 60px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 255, 255, 0.1);
   }
 }
 

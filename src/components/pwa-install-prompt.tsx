@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from 'react';
+import { Download, X } from 'lucide-react';
 
 interface BeforeInstallPromptEvent extends Event {
   readonly platforms: string[];
@@ -11,15 +12,14 @@ interface BeforeInstallPromptEvent extends Event {
   prompt(): Promise<void>;
 }
 
-export default function PWAInstallPrompt() {
+export function PWAInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
-  const [showInstallPrompt, setShowInstallPrompt] = useState(false);
+  const [showPrompt, setShowPrompt] = useState(false);
   const [isInstalled, setIsInstalled] = useState(false);
 
   useEffect(() => {
     // Check if app is already installed
-    if (window.matchMedia('(display-mode: standalone)').matches || 
-        (window.navigator as any).standalone === true) {
+    if (window.matchMedia('(display-mode: standalone)').matches) {
       setIsInstalled(true);
       return;
     }
@@ -28,13 +28,13 @@ export default function PWAInstallPrompt() {
     const handleBeforeInstallPrompt = (e: Event) => {
       e.preventDefault();
       setDeferredPrompt(e as BeforeInstallPromptEvent);
-      setShowInstallPrompt(true);
+      setShowPrompt(true);
     };
 
     // Listen for appinstalled event
     const handleAppInstalled = () => {
       setIsInstalled(true);
-      setShowInstallPrompt(false);
+      setShowPrompt(false);
       setDeferredPrompt(null);
     };
 
@@ -60,61 +60,59 @@ export default function PWAInstallPrompt() {
     }
     
     setDeferredPrompt(null);
-    setShowInstallPrompt(false);
+    setShowPrompt(false);
   };
 
   const handleDismiss = () => {
-    setShowInstallPrompt(false);
+    setShowPrompt(false);
   };
 
-  if (isInstalled || !showInstallPrompt) {
+  if (isInstalled || !showPrompt) {
     return null;
   }
 
   return (
-    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 bg-white border border-gray-200 rounded-lg shadow-lg p-4 z-50">
-      <div className="flex items-start gap-3">
-        <div className="flex-shrink-0">
-          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-            <svg className="w-6 h-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-            </svg>
+    <div className="fixed bottom-4 left-4 right-4 md:left-auto md:right-4 md:w-80 z-50">
+      <div className="bg-white dark:bg-slate-800 rounded-xl shadow-lg border border-slate-200 dark:border-slate-700 p-4">
+        <div className="flex items-start space-x-3">
+          <div className="flex-shrink-0">
+            <div className="w-10 h-10 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+              <Download className="w-5 h-5 text-white" />
+            </div>
           </div>
-        </div>
-        
-        <div className="flex-1 min-w-0">
-          <h3 className="text-sm font-medium text-gray-900 mb-1">
-            Install BevPro Voice Agent
-          </h3>
-          <p className="text-xs text-gray-600 mb-3">
-            Add to your home screen for quick access to your voice agents
-          </p>
           
-          <div className="flex gap-2">
-            <button
-              onClick={handleInstallClick}
-              className="flex-1 px-3 py-2 bg-blue-600 text-white text-xs font-medium rounded-md hover:bg-blue-700 transition-colors"
-            >
-              Install App
-            </button>
-            <button
-              onClick={handleDismiss}
-              className="px-3 py-2 text-gray-500 text-xs font-medium hover:text-gray-700 transition-colors"
-            >
-              Not Now
-            </button>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-semibold text-slate-900 dark:text-white">
+              Install BevPro Studio
+            </h3>
+            <p className="text-xs text-slate-600 dark:text-slate-400 mt-1">
+              Add to your home screen for the best experience
+            </p>
+            
+            <div className="flex space-x-2 mt-3">
+              <button
+                onClick={handleInstallClick}
+                className="flex-1 px-3 py-1.5 bg-gradient-to-r from-emerald-500 to-teal-600 text-white text-xs font-medium rounded-lg hover:shadow-lg transition-all duration-200"
+              >
+                Install
+              </button>
+              <button
+                onClick={handleDismiss}
+                className="px-3 py-1.5 text-slate-600 dark:text-slate-400 text-xs font-medium hover:text-slate-900 dark:hover:text-white transition-colors"
+              >
+                Later
+              </button>
+            </div>
           </div>
+          
+          <button
+            onClick={handleDismiss}
+            className="flex-shrink-0 p-1 text-slate-400 hover:text-slate-600 dark:hover:text-slate-300 transition-colors"
+          >
+            <X className="w-4 h-4" />
+          </button>
         </div>
-        
-        <button
-          onClick={handleDismiss}
-          className="flex-shrink-0 text-gray-400 hover:text-gray-600 transition-colors"
-        >
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-          </svg>
-        </button>
       </div>
     </div>
   );
-}
+} 

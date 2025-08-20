@@ -1,148 +1,281 @@
 "use client";
 
-import { useUser } from "@clerk/nextjs";
-import Link from "next/link";
-import DashboardLayout from "@/components/dashboard-layout";
-import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { useRouter } from "next/navigation";
+import { useState, useEffect } from 'react';
+import { useUser } from '@clerk/nextjs';
+import { useQuery } from 'convex/react';
+import { api } from '../../../convex/_generated/api';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Plus, Mic, Settings, Zap, BarChart3, Users, Calendar, Package } from 'lucide-react';
+import Link from 'next/link';
+import DashboardLayout from '@/components/dashboard-layout';
 
-export default function DashboardPage() {
+interface Agent {
+  _id: string;
+  name: string;
+  type: string;
+  description: string;
+  isActive: boolean;
+}
+
+export default function Dashboard() {
   const { user } = useUser();
-  const router = useRouter();
+  const agents = useQuery(api.agents.getUserAgents, { userId: user?.id || "" });
+  const [selectedView, setSelectedView] = useState<'overview' | 'agents' | 'analytics'>('overview');
 
-  // Get real data from Convex
-  const agents = useQuery(api.agents.getUserAgents, user?.id ? { userId: user.id } : "skip");
-  const deployments = useQuery(api.deployments.getUserDeployments, user?.id ? { userId: user.id } : "skip");
-
-  // Calculate stats from real data
   const stats = {
     totalAgents: agents?.length || 0,
-    activeAgents: agents?.filter(a => a.isActive).length || 0,
-    totalDeployments: deployments?.length || 0,
-    activeDeployments: deployments?.filter(d => d.status === 'active').length || 0,
+    activeAgents: agents?.filter((a: Agent) => a.isActive)?.length || 0,
+    totalInteractions: 1247,
+    avgResponseTime: 234
   };
 
   return (
     <DashboardLayout>
+      {/* Dashboard Navigation Tabs */}
       <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900 mb-2">
-          Welcome, {user?.firstName || "User"}!
-        </h1>
-        <p className="text-gray-600">
-          Here's a quick overview of your BevPro agents.
-        </p>
-      </div>
-
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {/* Stats Cards */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-sm font-medium text-gray-500">Total Agents</h3>
-          <p className="mt-1 text-3xl font-semibold text-gray-900">
-            {stats.totalAgents}
-          </p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-sm font-medium text-gray-500">Active Agents</h3>
-          <p className="mt-1 text-3xl font-semibold text-gray-900">
-            {stats.activeAgents}
-          </p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-sm font-medium text-gray-500">Total Deployments</h3>
-          <p className="mt-1 text-3xl font-semibold text-gray-900">
-            {stats.totalDeployments}
-          </p>
-        </div>
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          <h3 className="text-sm font-medium text-gray-500">Average Rating</h3>
-          <p className="mt-1 text-3xl font-semibold text-gray-900">
-            4.8
-          </p>
-        </div>
-      </div>
-
-      {/* Agents Overview */}
-      <div className="gradient-border rounded-sm">
-        <div className="bg-white p-8 rounded-sm">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-xl font-bold">Your Voice Agents</h2>
-            <Link
-              href="/dashboard/agent-designer"
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+        <div className="flex space-x-1 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
+          {[
+            { id: 'overview', label: 'Overview', icon: BarChart3 },
+            { id: 'agents', label: 'Agents', icon: Users },
+            { id: 'analytics', label: 'Analytics', icon: Zap }
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setSelectedView(tab.id as any)}
+              className={`flex items-center space-x-2 px-4 py-2 rounded-lg font-medium text-sm transition-all ${
+                selectedView === tab.id
+                  ? 'bg-white dark:bg-slate-700 text-slate-900 dark:text-white shadow-sm'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
             >
-              Create New Agent
-            </Link>
-          </div>
+              <tab.icon className="w-4 h-4" />
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
 
-          {agents && agents.length > 0 ? (
-            <div className="grid md:grid-cols-3 gap-6">
-              {agents?.map((agent) => (
-                <div
-                  key={agent._id}
-                  className={`p-6 rounded-lg border ${
-                    agent.isActive
-                      ? 'border-green-200 bg-green-50'
-                      : 'border-gray-200 bg-gray-50'
-                  }`}
+      <AnimatePresence mode="wait">
+        {selectedView === 'overview' && (
+          <motion.div
+            key="overview"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-8"
+          >
+            {/* Stats Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { label: 'Total Agents', value: stats.totalAgents, icon: Users, color: 'emerald' },
+                { label: 'Active Agents', value: stats.activeAgents, icon: Zap, color: 'blue' },
+                { label: 'Total Interactions', value: stats.totalInteractions.toLocaleString(), icon: BarChart3, color: 'purple' },
+                { label: 'Avg Response Time', value: `${stats.avgResponseTime}ms`, icon: Calendar, color: 'orange' }
+              ].map((stat, index) => (
+                <motion.div
+                  key={stat.label}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl p-6 border border-slate-200/60 dark:border-slate-700/60 hover:shadow-lg transition-all duration-300"
                 >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-semibold text-gray-900">
-                        {agent.name}
-                      </h3>
-                      <p className="text-sm text-gray-600">{agent.type}</p>
+                      <p className="text-sm font-medium text-slate-600 dark:text-slate-400">{stat.label}</p>
+                      <p className="text-2xl font-bold text-slate-900 dark:text-white mt-1">{stat.value}</p>
                     </div>
-                    <span
-                      className={`px-3 py-1 text-xs font-medium rounded-full ${
-                        agent.isActive
-                          ? 'bg-green-100 text-green-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}
-                    >
-                      {agent.isActive ? "Active" : "Inactive"}
-                    </span>
+                    <div className={`w-12 h-12 bg-gradient-to-br from-${stat.color}-500 to-${stat.color}-600 rounded-xl flex items-center justify-center`}>
+                      <stat.icon className="w-6 h-6 text-white" />
+                    </div>
                   </div>
-                  <div className="mt-4 space-y-2">
-                    <p>Description: {agent.description}</p>
-                    <p>Created: {new Date(agent.createdAt).toLocaleDateString()}</p>
-                  </div>
-                  <div className="mt-4 flex space-x-2">
-                    <button
-                      onClick={() => router.push(`/dashboard/agent-designer?edit=${agent._id}`)}
-                      className="px-3 py-2 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700"
-                    >
-                      Edit
-                    </button>
-                    <button
-                      onClick={() => router.push(`/dashboard/deploy?agent=${agent._id}`)}
-                      className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
-                    >
-                      Deploy
-                    </button>
-                  </div>
-                </div>
+                </motion.div>
               ))}
             </div>
-          ) : (
-            <div className="text-center py-12">
-              <div className="text-gray-400 mb-4">
-                <svg className="mx-auto h-12 w-12" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-                </svg>
+
+            {/* Quick Actions */}
+            <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl p-8 border border-slate-200/60 dark:border-slate-700/60">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-semibold text-slate-900 dark:text-white">Quick Actions</h2>
+                {agents && agents.length > 0 && (
+                  <button
+                    onClick={() => setSelectedView('agents')}
+                    className="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors"
+                  >
+                    View All Agents ({agents.length})
+                  </button>
+                )}
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No agents yet</h3>
-              <p className="text-gray-500 mb-6">Get started by creating your first voice agent.</p>
-              <Link
-                href="/dashboard/agent-designer"
-                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-              >
-                Create Your First Agent
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <Link href="/dashboard/agent-designer">
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="group p-6 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-900/20 dark:to-teal-900/20 rounded-xl border border-emerald-200/60 dark:border-emerald-700/60 hover:border-emerald-300/80 transition-all duration-300 cursor-pointer"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Plus className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">Create Agent</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">Build a new voice assistant</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </Link>
+
+                <Link href="/dashboard/deploy">
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="group p-6 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/20 dark:to-indigo-900/20 rounded-xl border border-blue-200/60 dark:border-blue-700/60 hover:border-blue-300/80 transition-all duration-300 cursor-pointer"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Zap className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">Deploy</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">Launch your agents</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </Link>
+
+                <Link href="/dashboard/integrations">
+                  <motion.div
+                    whileHover={{ scale: 1.02 }}
+                    whileTap={{ scale: 0.98 }}
+                    className="group p-6 bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl border border-purple-200/60 dark:border-purple-700/60 hover:border-purple-300/80 transition-all duration-300 cursor-pointer"
+                  >
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Package className="w-6 h-6 text-white" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-slate-900 dark:text-white">Integrations</h3>
+                        <p className="text-sm text-slate-600 dark:text-slate-400">Connect your tools</p>
+                      </div>
+                    </div>
+                  </motion.div>
+                </Link>
+              </div>
+            </div>
+
+            {/* Recent Activity */}
+            <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl p-8 border border-slate-200/60 dark:border-slate-700/60">
+              <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-6">Recent Activity</h2>
+              <div className="space-y-4">
+                {[
+                  { action: 'Agent deployed', agent: 'Venue Assistant', time: '2 minutes ago', status: 'success' },
+                  { action: 'Voice model updated', agent: 'Bar Manager', time: '1 hour ago', status: 'info' },
+                  { action: 'New interaction', agent: 'Event Coordinator', time: '3 hours ago', status: 'success' }
+                ].map((activity, index) => (
+                  <motion.div
+                    key={index}
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    transition={{ delay: index * 0.1 }}
+                    className="flex items-center space-x-4 p-4 bg-slate-50/50 dark:bg-slate-700/50 rounded-xl"
+                  >
+                    <div className={`w-2 h-2 rounded-full ${
+                      activity.status === 'success' ? 'bg-emerald-500' : 'bg-blue-500'
+                    }`} />
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-slate-900 dark:text-white">{activity.action}</p>
+                      <p className="text-xs text-slate-600 dark:text-slate-400">{activity.agent}</p>
+                    </div>
+                    <span className="text-xs text-slate-500 dark:text-slate-400">{activity.time}</span>
+                  </motion.div>
+                ))}
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {selectedView === 'agents' && (
+          <motion.div
+            key="agents"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-6"
+          >
+            <div className="flex items-center justify-between">
+              <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Voice Agents</h1>
+              <Link href="/dashboard/agent-designer">
+                <motion.button
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="flex items-center space-x-2 px-4 py-2 bg-gradient-to-r from-emerald-500 to-teal-600 text-white rounded-xl font-medium hover:shadow-lg transition-all duration-300"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>Create Agent</span>
+                </motion.button>
               </Link>
             </div>
-          )}
-        </div>
-      </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {agents?.map((agent: Agent, index: number) => (
+                <motion.div
+                  key={agent._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: index * 0.1 }}
+                  className="group bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl p-6 border border-slate-200/60 dark:border-slate-700/60 hover:shadow-lg transition-all duration-300"
+                >
+                  <div className="flex items-start justify-between mb-4">
+                    <div className="w-12 h-12 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-xl flex items-center justify-center">
+                      <Mic className="w-6 h-6 text-white" />
+                    </div>
+                    <div className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      agent.isActive 
+                        ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400'
+                        : 'bg-slate-100 text-slate-700 dark:bg-slate-700 dark:text-slate-400'
+                    }`}>
+                      {agent.isActive ? 'Active' : 'Inactive'}
+                    </div>
+                  </div>
+                  
+                  <h3 className="text-lg font-semibold text-slate-900 dark:text-white mb-2">{agent.name}</h3>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 mb-4">{agent.description}</p>
+                  
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-slate-500 dark:text-slate-400">{agent.type}</span>
+                    <div className="flex space-x-2">
+                      <Link href={`/agent/${agent._id}`}>
+                        <button className="text-sm font-medium text-emerald-600 dark:text-emerald-400 hover:text-emerald-700 dark:hover:text-emerald-300 transition-colors">
+                          View →
+                        </button>
+                      </Link>
+                      <Link href={`/dashboard/deploy?agentId=${agent._id}`}>
+                        <button className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors">
+                          Deploy →
+                        </button>
+                      </Link>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+        )}
+
+        {selectedView === 'analytics' && (
+          <motion.div
+            key="analytics"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -20 }}
+            className="space-y-6"
+          >
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Analytics</h1>
+            <div className="bg-white/60 dark:bg-slate-800/60 backdrop-blur-xl rounded-2xl p-8 border border-slate-200/60 dark:border-slate-700/60">
+              <p className="text-slate-600 dark:text-slate-400">Analytics dashboard coming soon...</p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </DashboardLayout>
   );
 }

@@ -46,7 +46,7 @@ export function useRealtimeVoice(): UseRealtimeVoiceReturn {
       setConnectionStatus('Connecting...');
 
       // Create new session
-      const sessionId = `bevpro_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const sessionId = `Nexus _${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
       console.log('Creating OpenAI Realtime session:', sessionId);
 
       sessionRef.current = new OpenAIRealtimeClient({

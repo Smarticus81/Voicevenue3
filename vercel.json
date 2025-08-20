@@ -1,14 +1,129 @@
 {
   "buildCommand": "pnpm build",
+  "outputDirectory": ".next",
   "devCommand": "pnpm dev",
   "installCommand": "pnpm install",
   "framework": "nextjs",
-  "outputDirectory": ".next",
   "regions": ["iad1"],
   "functions": {
-    "src/app/agent-api/route.ts": {
-      "runtime": "edge",
-      "maxDuration": 30
+    "src/app/api/agent-api/route.ts": {
+      "maxDuration": 30,
+      "memory": 1024
+    },
+    "src/app/api/generate-ui/route.ts": {
+      "maxDuration": 60,
+      "memory": 2048
+    },
+    "src/app/api/save-ui/route.ts": {
+      "maxDuration": 30,
+      "memory": 1024
     }
-  }
+  },
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(self), microphone=(self), geolocation=(self)"
+        }
+      ]
+    },
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Access-Control-Allow-Origin",
+          "value": "*"
+        },
+        {
+          "key": "Access-Control-Allow-Methods",
+          "value": "GET, POST, PUT, DELETE, OPTIONS"
+        },
+        {
+          "key": "Access-Control-Allow-Headers",
+          "value": "Content-Type, Authorization"
+        }
+      ]
+    },
+    {
+      "source": "/manifest.json",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "application/manifest+json"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600"
+        }
+      ]
+    },
+    {
+      "source": "/sw.js",
+      "headers": [
+        {
+          "key": "Service-Worker-Allowed",
+          "value": "/"
+        },
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/embed.js",
+      "destination": "/api/embed"
+    },
+    {
+      "source": "/agent/:agentId",
+      "destination": "/agent/[agentId]"
+    }
+  ],
+  "redirects": [
+    {
+      "source": "/home",
+      "destination": "/",
+      "permanent": true
+    }
+  ],
+  "env": {
+    "NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY": "@clerk-publishable-key",
+    "CLERK_SECRET_KEY": "@clerk-secret-key",
+    "NEXT_PUBLIC_CONVEX_URL": "@convex-url",
+    "CONVEX_DEPLOY_KEY": "@convex-deploy-key",
+    "NEXT_PUBLIC_OPENAI_API_KEY": "@openai-api-key",
+    "NEXT_PUBLIC_ELEVENLABS_API_KEY": "@elevenlabs-api-key",
+    "NEXT_PUBLIC_GOOGLE_API_KEY": "@google-api-key",
+    "NEXT_PUBLIC_PLAYHT_API_KEY": "@playht-api-key",
+    "NEXT_PUBLIC_PLAYHT_USER_ID": "@playht-user-id",
+    "NEXT_PUBLIC_SUPABASE_URL": "@supabase-url",
+    "NEXT_PUBLIC_SUPABASE_ANON_KEY": "@supabase-anon-key",
+    "V0_API_KEY": "@v0-api-key"
+  },
+  "crons": [
+    {
+      "path": "/api/cron/cleanup",
+      "schedule": "0 2 * * *"
+    }
+  ]
 }

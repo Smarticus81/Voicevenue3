@@ -1,0 +1,32 @@
+import { action } from "./_generated/server";
+import { v } from "convex/values";
+
+export const createVercelDeployment = action({
+  args: {
+    agentId: v.string(),
+    agentConfig: v.any(),
+    deploymentType: v.union(v.literal("pwa"), v.literal("web"), v.literal("api")),
+    userId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    try {
+      // Generate a mock deployment for now
+      const deploymentId = `vercel_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      const deploymentUrl = `https://bevpro-agent-${args.agentId}-${Date.now()}.vercel.app`;
+      
+      return {
+        success: true,
+        deploymentId: deploymentId,
+        deploymentUrl: deploymentUrl,
+        claimLink: `https://vercel.com/claim/${deploymentId}`,
+        agentId: args.agentId,
+        status: 'deployed',
+        timestamp: new Date().toISOString(),
+      };
+
+    } catch (error) {
+      console.error("Vercel deployment failed:", error);
+      throw new Error(`Deployment failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
+  },
+});

@@ -1,6 +1,6 @@
 {
-  "name": "BevPro Voice Agent",
-  "short_name": "BevPro",
+  "name": "Nexus  Voice Agent",
+  "short_name": "Nexus ",
   "description": "Professional voice agent for venue management and bar operations",
   "start_url": "/",
   "display": "standalone",
@@ -12,7 +12,7 @@
   "categories": ["business", "productivity", "utilities"],
   "icons": [
     {
-      "src": "/bevpro-logo.svg",
+      "src": "/Nexus -logo.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "any"
@@ -38,7 +38,7 @@
       "url": "/dashboard/agent-designer",
       "icons": [
         {
-          "src": "/bevpro-logo.svg",
+          "src": "/Nexus -logo.svg",
           "sizes": "96x96"
         }
       ]
@@ -50,7 +50,7 @@
       "url": "/dashboard",
       "icons": [
         {
-          "src": "/bevpro-logo.svg",
+          "src": "/Nexus -logo.svg",
           "sizes": "96x96"
         }
       ]
